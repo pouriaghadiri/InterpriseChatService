@@ -1,0 +1,6 @@
+@InterpriseChatService_HostAddress = http://localhost:5111
+
+GET {{InterpriseChatService_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
