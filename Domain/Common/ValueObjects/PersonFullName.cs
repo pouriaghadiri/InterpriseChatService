@@ -11,6 +11,7 @@ namespace Domain.Common.ValueObjects
     {
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
+        private PersonFullName() { }
         public PersonFullName(string firstName, string lastName)
         {
             if (string.IsNullOrWhiteSpace(firstName))

@@ -9,6 +9,7 @@ namespace Domain.Common.ValueObjects
 {
     public class EntityName : ValueObject
     {
+        private EntityName() { }
         public string Value { get; private set; }
         public EntityName(string value)
         {

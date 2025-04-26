@@ -10,6 +10,7 @@ namespace Domain.Common.ValueObjects
     class MessageContent : ValueObject
     {
         public string Value { get; private set; }
+        private MessageContent() { }
         public MessageContent(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
