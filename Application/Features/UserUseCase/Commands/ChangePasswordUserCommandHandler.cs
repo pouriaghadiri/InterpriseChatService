@@ -23,19 +23,19 @@ namespace Application.Features.UserUseCase.Commands
         {
             var user = await _userRepository.GetbyIdAsync(request.Id);
             if (user == null)
-                return MessageDTO.Failure("This user is not valid!");
+                return MessageDTO.Failure("Not Found Error", null, "This user is not valid!");
             
             if(!user.HashedPassword.Verify(request.CurrentPassword))
-                return MessageDTO.Failure("The current password is incorrect.");
+                return MessageDTO.Failure("Error", null, "The current password is incorrect.");
             
             if(request.NewPassword != request.NewPasswordConfirm)
-                return MessageDTO.Failure("The new password and confirmation password do not match.");
+                return MessageDTO.Failure("Error", null, "The new password and confirmation password do not match.");
 
             user.HashedPassword = HashedPassword.CreateFromPlain(request.NewPassword);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return MessageDTO.Success("Password changed successfully.");
+            return MessageDTO.Success("Uodated", "Password changed successfully.");
 
         }
     }

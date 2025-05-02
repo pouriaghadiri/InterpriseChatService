@@ -1,16 +1,11 @@
-﻿using Domain.Base;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Domain.Base;
 
 namespace Application.Common
-{ 
+{
     public class ValidationBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-        where TRequest : IRequest<TResponse>
+        where TRequest : notnull
     {
         private readonly IEnumerable<IValidator<TRequest>> _validators;
 
@@ -24,33 +19,39 @@ namespace Application.Common
             if (_validators.Any())
             {
                 var context = new ValidationContext<TRequest>(request);
-                var failures = _validators
-                    .Select(v => v.Validate(context))
-                    .SelectMany(result => result.Errors)
-                    .Where(f => f != null)
-                    .ToList();
+                var validationResults = await Task.WhenAll(_validators.Select(v => v.ValidateAsync(context, cancellationToken)));
+                var failures = validationResults.SelectMany(r => r.Errors).Where(f => f != null).ToList();
 
-                if (failures.Count != 0)
+                if (failures.Any())
                 {
-                    var errors = failures.Select(x => x.ErrorMessage).ToArray();
-                    // فرض می‌گیریم ResultDTO<T> یا MessageDTO داشته باشی:
+                    var errors = failures.Select(f => f.ErrorMessage).ToList();
+
+                    // اگر TResponse از نوع MessageDTO باشد
+                    if (typeof(TResponse) == typeof(MessageDTO))
+                    {
+                        var result = MessageDTO.Failure("Validation Failed", errors, "There was an error in your input.");
+                        return (TResponse)(object)result!;
+                    }
+
+                    // اگر TResponse از نوع ResultDTO<T> باشد
                     var responseType = typeof(TResponse);
-
-                    if (responseType == typeof(ResultDTO<Guid>))
+                    if (responseType.IsGenericType && responseType.GetGenericTypeDefinition() == typeof(ResultDTO<>))
                     {
-                        return (TResponse)(object)ResultDTO<Guid>.Failure(string.Join(" | ", errors));
-                    }
-                    else if (responseType == typeof(MessageDTO))
-                    {
-                        return (TResponse)(object)MessageDTO.Failure(string.Join(" | ", errors));
+                        var genericArg = responseType.GetGenericArguments()[0];
+                        var method = typeof(ResultDTO<>)
+                            .MakeGenericType(genericArg)
+                            .GetMethod(nameof(ResultDTO<object>.Failure));
+
+                        var result = method!.Invoke(null, new object[] { "Validation Failed", errors, "There was an error in your input." });
+                        return (TResponse)result!;
                     }
 
-                    throw new ValidationException(failures); // fallback
+                    // در غیر این صورت throw exception
+                    throw new ValidationException(failures);
                 }
             }
 
             return await next();
         }
     }
-
 }

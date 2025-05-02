@@ -23,7 +23,7 @@ namespace Application.Features.UserUseCase.Commands
         {
             var user = await _userRepository.GetbyIdAsync(request.Id);
             if (user == null)
-                return MessageDTO.Failure("This user is not valid!");
+                return MessageDTO.Failure("NotFound Error", null, "This user is not valid!");
             
             PersonFullName personFullName = new PersonFullName(request.FirstName, request.LastName);
             PhoneNumber phoneNumber = new PhoneNumber(request.PhoneNumber);
@@ -38,7 +38,7 @@ namespace Application.Features.UserUseCase.Commands
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return MessageDTO.Success("User profile Updated successfully.");
+            return MessageDTO.Success("Updated", "User profile Updated successfully.");
 
         }
     }

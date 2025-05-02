@@ -2,7 +2,12 @@
 using API.DependencyInjections;
 using Application;
 using Application.Common;
+using Application.Features.UserUseCase.Validators;
+using FluentValidation;
 using MediatR;
+using FluentValidation.AspNetCore;
+using Microsoft.AspNetCore.Mvc;
+
 
 internal class Program
 {
@@ -24,6 +29,13 @@ internal class Program
             cfg.RegisterServicesFromAssembly(typeof(Application.AssemblyReference).Assembly);
         });
         builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+        builder.Services.AddValidatorsFromAssembly(typeof(RegisterUserCommandValidator).Assembly);
+        builder.Services.AddFluentValidationAutoValidation();
+        builder.Services.Configure<ApiBehaviorOptions>(options =>
+        {
+            options.SuppressModelStateInvalidFilter = true;
+        });
+
 
 
         var app = builder.Build();

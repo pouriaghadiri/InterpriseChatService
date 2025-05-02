@@ -24,7 +24,7 @@ namespace Application.Features.UserUseCase.Commands
             var exist = await _userRepository.GetbyEmailAsync(new Email(request.Email));
             if (exist != null)
             {
-                return ResultDTO<Guid>.Failure("This email is already registered!");
+                return ResultDTO<Guid>.Failure("Exist Error", null, "This email is already registered!");
             }
             PersonFullName personFullName = new PersonFullName(request.FirstName, request.LastName);
             Email email = new Email(request.Email);
@@ -34,13 +34,13 @@ namespace Application.Features.UserUseCase.Commands
             var newUser = User.RegisterUser(personFullName, email, hashedPassword, phoneNumber, request.ProfilePicture, request.Bio, request.Location);
             if (!newUser.IsSuccess)
             {
-                return ResultDTO<Guid>.Failure(newUser.ErrorMessage);
+                return ResultDTO<Guid>.Failure(newUser.Title, null, newUser.Message);
             }
             // Fix: Remove the assignment to a variable since AddAsync returns void
             await _userRepository.AddAsync(newUser.Data);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return ResultDTO<Guid>.Success(newUser.Data.Id, "User created successfully");
+            return ResultDTO<Guid>.Success("Created", newUser.Data.Id, "User created successfully");
         }
     }
 }

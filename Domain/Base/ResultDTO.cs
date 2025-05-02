@@ -10,23 +10,25 @@ namespace Domain.Base
     {
         public bool IsSuccess { get; private set; }
         public T? Data { get; private set; }
-        public string? ErrorMessage { get; private set; }
-        public string? SuccessMessage { get; set; }
-        public ResultDTO(bool isSuccess, T? data, string? errorMessage, string? successMessage)
+        public string Title { get; set; }
+        public string? Message { get; set; }
+        public List<string>? Errors { get; private set; }
+        public ResultDTO(bool isSuccess, T? data,string title, List<string>? errors, string? message)
         {
             IsSuccess = isSuccess;
             Data = data;
-            ErrorMessage = errorMessage;
-            SuccessMessage = successMessage;
+            Title = title;
+            Message = message;
+            Errors = errors;
         }
 
-        public static ResultDTO<T> Success(T data, string? successMessage)
+        public static ResultDTO<T> Success(string title, T data, string? message)
         {
-            return new(true, data, null, successMessage);
+            return new(true, data, title, null, message);
         }
-        public static ResultDTO<T> Failure(string errorMessage)
+        public static ResultDTO<T> Failure(string title, List<string>? errors,  string message)
         {
-            return new(false, default, errorMessage, null);
+            return new(false, default, title, errors, message);
         }
     }
 }
