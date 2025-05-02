@@ -29,9 +29,11 @@ namespace Application.Features.UserUseCase.Commands
             PersonFullName personFullName = new PersonFullName(request.FirstName, request.LastName);
             Email email = new Email(request.Email);
             HashedPassword hashedPassword = new HashedPassword(request.Password);
-            PhoneNumber phoneNumber = new PhoneNumber(request.PhoneNumber);
+            var phoneResult = PhoneNumber.Create(request.PhoneNumber);
+            if (!phoneResult.IsSuccess)
+                return ResultDTO<Guid>.Failure("Invalid input", phoneResult.Errors, "Phone number validation failed");
 
-            var newUser = User.RegisterUser(personFullName, email, hashedPassword, phoneNumber, request.ProfilePicture, request.Bio, request.Location);
+            var newUser = User.RegisterUser(personFullName, email, hashedPassword, phoneResult.Data, request.ProfilePicture, request.Bio, request.Location);
             if (!newUser.IsSuccess)
             {
                 return ResultDTO<Guid>.Failure(newUser.Title, null, newUser.Message);

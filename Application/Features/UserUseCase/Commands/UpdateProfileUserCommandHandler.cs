@@ -26,10 +26,12 @@ namespace Application.Features.UserUseCase.Commands
                 return MessageDTO.Failure("NotFound Error", null, "This user is not valid!");
             
             PersonFullName personFullName = new PersonFullName(request.FirstName, request.LastName);
-            PhoneNumber phoneNumber = new PhoneNumber(request.PhoneNumber);
+            var phoneResult = PhoneNumber.Create(request.PhoneNumber);
+            if (!phoneResult.IsSuccess)
+                return MessageDTO.Failure("Invalid input", phoneResult.Errors, "Phone number validation failed");
 
 
-            var result = user.UpdateUserProfile(personFullName, user.Email, phoneNumber, request.Bio, request.Location, request.ProfilePicture);
+            var result = user.UpdateUserProfile(personFullName, user.Email, phoneResult.Data, request.Bio, request.Location, request.ProfilePicture);
             if (!result.IsSuccess)
             {
                 return result;
