@@ -1,4 +1,4 @@
-﻿using Application.Common;
+﻿using Domain.Base;
 using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
@@ -32,12 +32,15 @@ namespace Application.Features.UserUseCase.Commands
             PhoneNumber phoneNumber = new PhoneNumber(request.PhoneNumber);
 
             var newUser = User.RegisterUser(personFullName, email, hashedPassword, phoneNumber, request.ProfilePicture, request.Bio, request.Location);
-
+            if (!newUser.IsSuccess)
+            {
+                return ResultDTO<Guid>.Failure(newUser.ErrorMessage);
+            }
             // Fix: Remove the assignment to a variable since AddAsync returns void
             await _userRepository.AddAsync(newUser.Data);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return ResultDTO<Guid>.Success(newUser.Data.Id);
+            return ResultDTO<Guid>.Success(newUser.Data.Id, "User created successfully");
         }
     }
 }

@@ -10,16 +10,17 @@ namespace Domain.Base
     {
         public bool IsSuccess { get; }
         public string? ErrorMessage { get; }
-
+        public string? SuccessMessage { get; set; }
         public bool IsFailure => !IsSuccess;
 
-        private MessageDTO(bool isSuccess, string? errorMessage)
+        private MessageDTO(bool isSuccess, string? errorMessage, string? successMessage)
         {
             IsSuccess = isSuccess;
             ErrorMessage = errorMessage;
+            SuccessMessage = successMessage;
         }
 
-        public static MessageDTO Success() => new(true, null);
-        public static MessageDTO Failure(string errorMessage) => new(false, errorMessage);
+        public static MessageDTO Success(string successMessage) => new(true, null, successMessage);
+        public static MessageDTO Failure(string errorMessage) => new(false, errorMessage, null);
     }
 }

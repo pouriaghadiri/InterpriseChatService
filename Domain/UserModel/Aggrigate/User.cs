@@ -48,10 +48,10 @@ namespace Domain.Entities
                Location = Location
            };
 
-            return ResultDTO<User>.Success(newUser);
+            return ResultDTO<User>.Success(newUser, "New User registered Successfully.");
         }
 
-        public MessageDTO UpdateUserProfile(PersonFullName fullName, Email email, PhoneNumber phone, string bio, string location)
+        public MessageDTO UpdateUserProfile(PersonFullName fullName, Email email, PhoneNumber phone, string bio, string location, string profilePicture)
         {
             if (string.IsNullOrWhiteSpace(fullName.FirstName) && string.IsNullOrWhiteSpace(fullName.FirstName))
                 return MessageDTO.Failure("FullName name cannot be empty");
@@ -64,8 +64,9 @@ namespace Domain.Entities
             Phone = phone;
             Bio = bio;
             Location = location;
+            ProfilePicture = profilePicture;
             Update();
-            return MessageDTO.Success();
+            return MessageDTO.Success("Your Profile Updated Successfully.");
 
         }
         public MessageDTO ChangePassword(string currentPassword, string newPassword)
@@ -76,7 +77,7 @@ namespace Domain.Entities
                 return MessageDTO.Failure("Current password is incorrect");
             this.HashedPassword = HashedPassword.CreateFromPlain(newPassword);
 
-            return MessageDTO.Success();
+            return MessageDTO.Success("Your Password Updated Successfully");
 
         }
 
