@@ -28,14 +28,14 @@ namespace Domain.Entities
         {
             
         }
-        public static User RegisterUser(PersonFullName fullName, Email email, HashedPassword hashedPassword, PhoneNumber phone, string profilePicture, string bio, string Location)
+        public static ResultDTO<User> RegisterUser(PersonFullName fullName, Email email, HashedPassword hashedPassword, PhoneNumber phone, string profilePicture, string bio, string Location)
         {
-            if (string.IsNullOrWhiteSpace(fullName.FirstName) && string.IsNullOrWhiteSpace(fullName.FirstName))
-                throw new DomainException("FullName name cannot be empty", (int)DomainExceptionEnums.CantBeNull);
+            if (string.IsNullOrWhiteSpace(fullName.FirstName) && string.IsNullOrWhiteSpace(fullName.LastName))
+                return ResultDTO<User>.Failure("FullName name cannot be empty");
             if (string.IsNullOrWhiteSpace(phone.Value))
-                throw new DomainException("Phone number cannot be empty", (int)DomainExceptionEnums.CantBeNull);
+                return ResultDTO<User>.Failure("Phone number cannot be empty");
             if (string.IsNullOrWhiteSpace(email.Value))
-                throw new DomainException("Email cannot be empty", (int)DomainExceptionEnums.CantBeNull);
+                return ResultDTO<User>.Failure("Email cannot be empty");
 
             User newUser = new User()
            {
@@ -48,31 +48,35 @@ namespace Domain.Entities
                Location = Location
            };
 
-            return newUser;
+            return ResultDTO<User>.Success(newUser);
         }
 
-        public void UpdateUserProfile(PersonFullName fullName, Email email, PhoneNumber phone, string bio, string location)
+        public MessageDTO UpdateUserProfile(PersonFullName fullName, Email email, PhoneNumber phone, string bio, string location)
         {
             if (string.IsNullOrWhiteSpace(fullName.FirstName) && string.IsNullOrWhiteSpace(fullName.FirstName))
-                throw new DomainException("FullName name cannot be empty", (int)DomainExceptionEnums.CantBeNull);
+                return MessageDTO.Failure("FullName name cannot be empty");
             if (string.IsNullOrWhiteSpace(phone.Value))
-                throw new DomainException("Phone number cannot be empty", (int)DomainExceptionEnums.CantBeNull);
+                return MessageDTO.Failure("Phone number cannot be empty");
             if (string.IsNullOrWhiteSpace(email.Value))
-                throw new DomainException("Email cannot be empty", (int)DomainExceptionEnums.CantBeNull);
+                return MessageDTO.Failure("Email cannot be empty");
             FullName = fullName;
             Email = email;
             Phone = phone;
             Bio = bio;
             Location = location;
             Update();
+            return MessageDTO.Success();
+
         }
-        public void ChangePassword(string currentPassword, string newPassword)
+        public MessageDTO ChangePassword(string currentPassword, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
-                throw new DomainException("New password cannot be empty or less than 6 charachters", (int)DomainExceptionEnums.CantBeNull);
+                return MessageDTO.Failure("New password cannot be empty or less than 6 charachters");
             if (!HashedPassword.Verify(newPassword))
-                throw new DomainException("Current password is incorrect", (int)DomainExceptionEnums.Unauthorized);
+                return MessageDTO.Failure("Current password is incorrect");
             this.HashedPassword = HashedPassword.CreateFromPlain(newPassword);
+
+            return MessageDTO.Success();
 
         }
 

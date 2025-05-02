@@ -1,6 +1,8 @@
 ﻿using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
+using Persistence.Context;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,24 +13,24 @@ namespace Persistence.Repositories
 {
     public class UserRepository : IUserRepository
     {
-        public Task AddAsync(User user)
+        private readonly ApplicationDbContext _context;
+        public UserRepository(ApplicationDbContext context)
         {
-            throw new NotImplementedException();
+            _context = context;
+        }
+        public async Task AddAsync(User user)
+        {
+            await _context.Users.AddAsync(user);
         }
 
-        public Task<User?> GetbyEmailAsync(Email email)
+        public async Task<User?> GetbyEmailAsync(Email email)
         {
-            throw new NotImplementedException();
+            return await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(x => x.Email.Value == email.Value);
         }
 
-        public Task<User?> GetbyIdAsync(Guid id)
+        public async Task<User?> GetbyIdAsync(Guid id)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateAsync(User user)
-        {
-            throw new NotImplementedException();
-        }
+            return await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(x => x.Id == id);
+        } 
     }
 }
