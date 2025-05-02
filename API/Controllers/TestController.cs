@@ -1,19 +1,21 @@
+using Application.Features.UserUseCase;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InterpriseChatService.Controllers;
 
 [ApiController]
 [Route("[controller]")]
-public class WeatherForecastController : ControllerBase
+public class TestController : ControllerBase
 {
     private static readonly string[] Summaries = new[]
     {
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    private readonly ILogger<WeatherForecastController> _logger;
+    private readonly ILogger<TestController> _logger;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    public TestController(ILogger<TestController> logger)
     {
         _logger = logger;
     }
@@ -28,5 +30,11 @@ public class WeatherForecastController : ControllerBase
             Summary = Summaries[Random.Shared.Next(Summaries.Length)]
         })
         .ToArray();
+    }
+    [HttpGet("ping")]
+    public async Task<IActionResult> Ping([FromServices] IMediator mediator)
+    {
+        var result = await mediator.Send(new PingCommand());
+        return Ok(result); 
     }
 }
