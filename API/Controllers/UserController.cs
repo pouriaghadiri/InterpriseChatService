@@ -26,5 +26,19 @@ public class UserController : ControllerBase
         var result = await _mediator.Send(command);
         return Ok(result);
     }
+    [HttpPost]
+    [Route("ChnagePassword")]
+    public async Task<ActionResult<MessageDTO>> ChnagePassword([FromBody] ChangePasswordUserCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
+    [HttpPost]
+    [Route("UpdateProfile")]
+    public async Task<ActionResult<MessageDTO>> UpdateProfile([FromBody] UpdateProfileUserCommand command)
+    {
+        var result = await _mediator.Send(command);
+        return Ok(result);
+    }
 
 }

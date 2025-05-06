@@ -35,7 +35,7 @@ namespace Application.Features.UserUseCase.Commands
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-            return MessageDTO.Success("Uodated", "Password changed successfully.");
+            return MessageDTO.Success("Updated", "Password changed successfully.");
 
         }
     }
