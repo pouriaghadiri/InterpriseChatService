@@ -19,7 +19,7 @@ namespace Application.Features.UserUseCase.Commands
         }
 
 
-        async Task<ResultDTO<Guid>> IRequestHandler<RegisterUserCommand, ResultDTO<Guid>>.Handle(RegisterUserCommand request, CancellationToken cancellationToken)
+        public async Task<ResultDTO<Guid>> Handle(RegisterUserCommand request, CancellationToken cancellationToken)
         {
             var exist = await _userRepository.GetbyEmailAsync(new Email(request.Email));
             if (exist != null)
