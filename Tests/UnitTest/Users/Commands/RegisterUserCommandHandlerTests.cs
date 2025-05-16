@@ -11,6 +11,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using FluentAssertions;
+using Xunit.Sdk;
+using Domain.Base;
 
 namespace Tests.UnitTest.Users.Commands
 {
@@ -19,6 +21,7 @@ namespace Tests.UnitTest.Users.Commands
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly RegisterUserCommandHandler _handler;
+        private readonly RegisterUserCommand _request;
 
         public RegisterUserCommandHandlerTests()
         {
@@ -26,13 +29,8 @@ namespace Tests.UnitTest.Users.Commands
             _unitOfWorkMock = new Mock<IUnitOfWork>();
 
             _handler = new RegisterUserCommandHandler(_unitOfWorkMock.Object, _userRepositoryMock.Object);
-        }
 
-        [Fact]
-        public async Task Handle_Should_RegisterUser_WhenInputIsValid()
-        {
-            // Arrange
-            var command = new RegisterUserCommand
+            _request = new RegisterUserCommand
             {
                 FirstName = "Ali",
                 LastName = "Rezaei",
@@ -42,6 +40,12 @@ namespace Tests.UnitTest.Users.Commands
                 Bio = "Developer",
                 Location = "Tehran"
             };
+        }
+
+        [Fact]
+        public async Task Handle_Should_RegisterUser_WhenInputIsValid()
+        {
+            // Arrange 
 
             _userRepositoryMock
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
@@ -56,13 +60,35 @@ namespace Tests.UnitTest.Users.Commands
                 .ReturnsAsync(1); // ذخیره موفق
 
             // Act
-            var result = await _handler.Handle(command, CancellationToken.None);
+            var result = await _handler.Handle(_request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBe(Guid.Empty);
             result.Message.Should().Be("User created successfully");
+        }
+
+        [Fact]
+        public async Task Handle_Should_Return_Failure_WhenEmailExist()
+        {
+            //Arrange
+            PersonFullName personFullName = new PersonFullName(_request.FirstName, _request.LastName);
+            Email email = new Email(_request.Email);
+            HashedPassword hashedPassword = new HashedPassword(_request.Password);
+            var phoneResult = PhoneNumber.Create(_request.PhoneNumber);
+            var existUser = User.RegisterUser(personFullName, email, hashedPassword, phoneResult.Data, _request.ProfilePicture, _request.Bio, _request.Location);
+
+            _userRepositoryMock.Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
+                .ReturnsAsync(existUser.Data);
+
+            //Act
+            var response = await _handler.Handle(_request, CancellationToken.None);
+
+            //Assert
+            response.Should().NotBeNull();
+            response.IsSuccess.Should().BeFalse();
+            response.Title.Should().BeSameAs("Exist Error");
         }
     }
 }
