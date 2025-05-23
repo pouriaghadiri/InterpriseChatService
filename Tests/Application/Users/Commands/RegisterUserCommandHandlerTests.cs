@@ -73,9 +73,14 @@ namespace Tests.UnitTest.Users.Commands
         public async Task Handle_Should_Return_Failure_WhenEmailExist()
         {
             //Arrange
-            PersonFullName personFullName = new PersonFullName(_request.FirstName, _request.LastName);
-            Email email = new Email(_request.Email);
-            HashedPassword hashedPassword = new HashedPassword(_request.Password);
+            var createdFullName = PersonFullName.Create(_request.FirstName, _request.LastName);
+            PersonFullName personFullName = createdFullName.Data;
+
+            var createdEmail = Email.Create(_request.Email);
+            Email email = createdEmail.Data;
+
+            var createdPassword = HashedPassword.Create(_request.Password);
+            HashedPassword hashedPassword = createdPassword.Data;
             var phoneResult = PhoneNumber.Create(_request.PhoneNumber);
             var existUser = User.RegisterUser(personFullName, email, hashedPassword, phoneResult.Data, _request.ProfilePicture, _request.Bio, _request.Location);
 

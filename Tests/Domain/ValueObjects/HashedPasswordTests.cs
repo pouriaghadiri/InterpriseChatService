@@ -13,7 +13,7 @@ namespace Domain.UnitTests.ValueObjects
             var plainPassword = "TestPassword123!";
 
             // Act
-            var hashedPassword = new HashedPassword(plainPassword);
+            var hashedPassword = HashedPassword.Create(plainPassword).Data;
 
             // Assert
             hashedPassword.Hash.Should().NotBeNullOrEmpty();
@@ -24,12 +24,16 @@ namespace Domain.UnitTests.ValueObjects
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
-        public void Create_WithEmptyOrNullPassword_ShouldThrowArgumentException(string invalidPassword)
+        public void Create_WithEmptyOrNullPassword_ShouldReturnFailure(string invalidPassword)
         {
             // Act & Assert
-            var action = () => new HashedPassword(invalidPassword);
-            action.Should().Throw<ArgumentException>()
-                .WithMessage("Password is required.");
+
+            var result = HashedPassword.Create(invalidPassword);
+
+            result.IsSuccess.Should().BeFalse();
+            result.Data.Should().BeNull();
+            result.Errors.Should().Contain("Password is required.");
+            result.Message.Should().Be("Please fix the password input."); 
         }
 
         [Fact]
@@ -51,7 +55,7 @@ namespace Domain.UnitTests.ValueObjects
         {
             // Arrange
             var plainPassword = "TestPassword123!";
-            var hashedPassword = new HashedPassword(plainPassword);
+            var hashedPassword = HashedPassword.Create(plainPassword).Data;
 
             // Act
             var result = hashedPassword.Verify(plainPassword);
@@ -64,7 +68,7 @@ namespace Domain.UnitTests.ValueObjects
         public void Verify_WithIncorrectPassword_ShouldReturnFalse()
         {
             // Arrange
-            var hashedPassword = new HashedPassword("CorrectPassword123!");
+            var hashedPassword = HashedPassword.Create("CorrectPassword123!").Data;
 
             // Act
             var result = hashedPassword.Verify("WrongPassword123!");
@@ -78,8 +82,8 @@ namespace Domain.UnitTests.ValueObjects
         {
             // Arrange
             var plainPassword = "TestPassword123!";
-            var hashedPassword1 = new HashedPassword(plainPassword);
-            var hashedPassword2 = new HashedPassword(plainPassword);
+            var hashedPassword1 = HashedPassword.Create(plainPassword).Data;
+            var hashedPassword2 = HashedPassword.Create(plainPassword).Data;
 
             // Act & Assert
             // Note: Even with the same plain password, the hash and salt will be different
@@ -101,8 +105,8 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithDifferentPasswords_ShouldReturnFalse()
         {
             // Arrange
-            var hashedPassword1 = new HashedPassword("Password1");
-            var hashedPassword2 = new HashedPassword("Password2");
+            var hashedPassword1 = HashedPassword.Create("Password1").Data;
+            var hashedPassword2 = HashedPassword.Create("Password2").Data;
 
             // Act & Assert
             hashedPassword1.Should().NotBe(hashedPassword2);
@@ -113,7 +117,7 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithNull_ShouldReturnFalse()
         {
             // Arrange
-            var hashedPassword = new HashedPassword("TestPassword123!");
+            var hashedPassword = HashedPassword.Create("TestPassword123!").Data;
 
             // Act & Assert
             hashedPassword.Equals(null).Should().BeFalse();
@@ -124,8 +128,8 @@ namespace Domain.UnitTests.ValueObjects
         {
             // Arrange
             var plainPassword = "TestPassword123!";
-            var hashedPassword1 = new HashedPassword(plainPassword);
-            var hashedPassword2 = new HashedPassword(plainPassword);
+            var hashedPassword1 = HashedPassword.Create(plainPassword).Data;
+            var hashedPassword2 = HashedPassword.Create(plainPassword).Data;
 
             // Set same hash and salt for testing hash code
             var type = typeof(HashedPassword);

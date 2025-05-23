@@ -11,14 +11,20 @@ namespace Domain.Common.ValueObjects
     {
         public string Value { get; private set; }
         private MessageContent() { }
-        public MessageContent(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentException("Message content is required.");
-            if (value.Length > 1500)
-                throw new ArgumentException("Message Content is too long");
-
+        private MessageContent(string value)
+        { 
             Value = value;
+        }
+        public static ResultDTO<MessageContent> Create(string value)
+        {
+            var errors = new List<string>();
+            if (string.IsNullOrWhiteSpace(value))
+                errors.Add("Message content is required.");
+            else if (value.Length > 1500)
+                errors.Add("Message Content is too long");
+            if (errors.Count > 0)
+                return ResultDTO<MessageContent>.Failure("Invalid Message", errors, "Please fix the message input.");
+            return ResultDTO<MessageContent>.Success("Valid Message", new MessageContent(value), "Message created successfully");
         }
         protected override IEnumerable<object> GetEqualityComponents()
         {

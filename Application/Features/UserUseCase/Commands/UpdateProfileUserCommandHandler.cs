@@ -24,11 +24,17 @@ namespace Application.Features.UserUseCase.Commands
             var user = await _userRepository.GetbyIdAsync(request.Id);
             if (user == null)
                 return MessageDTO.Failure("NotFound Error", null, "This user is not valid!");
-            
-            PersonFullName personFullName = new PersonFullName(request.FirstName, request.LastName);
+
+            var createdFullName = PersonFullName.Create(request.FirstName, request.LastName);
+            if (!createdFullName.IsSuccess || createdFullName.Data == null)
+            {
+                return MessageDTO.Failure("Invalid input", null, "Fullname validation failed");
+            }
+            PersonFullName personFullName = createdFullName.Data;
+
             var phoneResult = PhoneNumber.Create(request.PhoneNumber);
             if (!phoneResult.IsSuccess)
-                return MessageDTO.Failure("Invalid input", phoneResult.Errors, "Phone number validation failed");
+                return MessageDTO.Failure("Invalid input", phoneResult.Errors, "Phone number validation failed!");
 
 
             var result = user.UpdateUserProfile(personFullName, user.Email, phoneResult.Data, request.Bio, request.Location, request.ProfilePicture);

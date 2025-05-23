@@ -14,7 +14,7 @@ namespace Domain.UnitTests.ValueObjects
             var lastName = "Doe";
 
             // Act
-            var fullName = new PersonFullName(firstName, lastName);
+            var fullName = PersonFullName.Create(firstName, lastName).Data;
 
             // Assert
             fullName.FirstName.Should().Be("John");
@@ -25,32 +25,38 @@ namespace Domain.UnitTests.ValueObjects
         [InlineData("", "Doe")]
         [InlineData(" ", "Doe")]
         [InlineData(null, "Doe")]
-        public void Create_WithEmptyOrNullFirstName_ShouldThrowArgumentException(string firstName, string lastName)
+        public void Create_WithEmptyOrNullFirstName_ShouldReturnFailure(string firstName, string lastName)
         {
             // Act & Assert
-            var action = () => new PersonFullName(firstName, lastName);
-            action.Should().Throw<ArgumentException>()
-                .WithMessage("First name is required.");
+
+            var result = PersonFullName.Create(firstName, lastName);
+            result.IsSuccess.Should().BeFalse();
+            result.Data.Should().BeNull();
+            result.Errors.Should().Contain("Firstname is required.");
+            result.Message.Should().Be("Please fix the name input."); 
         }
 
         [Theory]
         [InlineData("John", "")]
         [InlineData("John", " ")]
         [InlineData("John", null)]
-        public void Create_WithEmptyOrNullLastName_ShouldThrowArgumentException(string firstName, string lastName)
+        public void Create_WithEmptyOrNullLastName_ShouldReturnFailure(string firstName, string lastName)
         {
             // Act & Assert
-            var action = () => new PersonFullName(firstName, lastName);
-            action.Should().Throw<ArgumentException>()
-                .WithMessage("Last name is required.");
+
+            var result = PersonFullName.Create(firstName, lastName);
+            result.IsSuccess.Should().BeFalse();
+            result.Data.Should().BeNull();
+            result.Errors.Should().Contain("Lastname is required.");
+            result.Message.Should().Be("Please fix the name input."); 
         }
 
         [Fact]
         public void Equals_WithSameNames_ShouldReturnTrue()
         {
             // Arrange
-            var fullName1 = new PersonFullName("John", "Doe");
-            var fullName2 = new PersonFullName("John", "Doe");
+            var fullName1 = PersonFullName.Create("John", "Doe").Data;
+            var fullName2 = PersonFullName.Create("John", "Doe").Data;
 
             // Act & Assert
             fullName1.Should().Be(fullName2);
@@ -61,8 +67,8 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithDifferentNames_ShouldReturnFalse()
         {
             // Arrange
-            var fullName1 = new PersonFullName("John", "Doe");
-            var fullName2 = new PersonFullName("Jane", "Doe");
+            var fullName1 = PersonFullName.Create("John", "Doe").Data;
+            var fullName2 = PersonFullName.Create("Jane", "Doe").Data;
 
             // Act & Assert
             fullName1.Should().NotBe(fullName2);
@@ -73,8 +79,8 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithDifferentCase_ShouldReturnTrue()
         {
             // Arrange
-            var fullName1 = new PersonFullName("John", "Doe");
-            var fullName2 = new PersonFullName("JOHN", "DOE");
+            var fullName1 = PersonFullName.Create("John", "Doe").Data;
+            var fullName2 = PersonFullName.Create("JOHN", "DOE").Data;
 
             // Act & Assert
             fullName1.Should().Be(fullName2);
@@ -85,7 +91,7 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithNull_ShouldReturnFalse()
         {
             // Arrange
-            var fullName = new PersonFullName("John", "Doe");
+            var fullName = PersonFullName.Create("John", "Doe").Data;
 
             // Act & Assert
             fullName.Equals(null).Should().BeFalse();
@@ -95,8 +101,8 @@ namespace Domain.UnitTests.ValueObjects
         public void GetHashCode_WithSameNames_ShouldReturnSameHashCode()
         {
             // Arrange
-            var fullName1 = new PersonFullName("John", "Doe");
-            var fullName2 = new PersonFullName("John", "Doe");
+            var fullName1 = PersonFullName.Create("John", "Doe").Data;
+            var fullName2 = PersonFullName.Create("John", "Doe").Data;
 
             // Act & Assert
             fullName1.GetHashCode().Should().Be(fullName2.GetHashCode());
@@ -106,8 +112,8 @@ namespace Domain.UnitTests.ValueObjects
         public void GetHashCode_WithDifferentCase_ShouldReturnSameHashCode()
         {
             // Arrange
-            var fullName1 = new PersonFullName("John", "Doe");
-            var fullName2 = new PersonFullName("JOHN", "DOE");
+            var fullName1 = PersonFullName.Create("John", "Doe").Data;
+            var fullName2 = PersonFullName.Create("JOHN", "DOE").Data;
 
             // Act & Assert
             fullName1.GetHashCode().Should().Be(fullName2.GetHashCode());

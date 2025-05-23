@@ -13,7 +13,7 @@ namespace Domain.UnitTests.ValueObjects
             var validContent = "Test message content";
 
             // Act
-            var messageContent = new MessageContent(validContent);
+            var messageContent = MessageContent.Create(validContent).Data;
 
             // Assert
             messageContent.Value.Should().Be("Test message content");
@@ -23,24 +23,30 @@ namespace Domain.UnitTests.ValueObjects
         [InlineData("")]
         [InlineData(" ")]
         [InlineData(null)]
-        public void Create_WithEmptyOrNullContent_ShouldThrowArgumentException(string invalidContent)
+        public void Create_WithEmptyOrNullContent_ShouldReturnFailure(string invalidContent)
         {
             // Act & Assert
-            var action = () => new MessageContent(invalidContent);
-            action.Should().Throw<ArgumentException>()
-                .WithMessage("Message content is required.");
+
+            var result = MessageContent.Create(invalidContent);
+            result.IsSuccess.Should().BeFalse();
+            result.Data.Should().BeNull();
+            result.Errors.Should().Contain("Message content is required.");
+            result.Message.Should().Be("Please fix the message input."); 
         }
 
         [Fact]
-        public void Create_WithTooLongContent_ShouldThrowArgumentException()
+        public void Create_WithTooLongContent_ShouldReturnFailure()
         {
             // Arrange
             var tooLongContent = new string('a', 1501); // 1501 characters
 
             // Act & Assert
-            var action = () => new MessageContent(tooLongContent);
-            action.Should().Throw<ArgumentException>()
-                .WithMessage("Message Content is too long");
+
+            var result = MessageContent.Create(tooLongContent);
+            result.IsSuccess.Should().BeFalse();
+            result.Data.Should().BeNull();
+            result.Errors.Should().Contain("Message Content is too long");
+            result.Message.Should().Be("Please fix the message input."); 
         }
 
         [Fact]
@@ -50,7 +56,7 @@ namespace Domain.UnitTests.ValueObjects
             var maxLengthContent = new string('a', 1500); // 1500 characters
 
             // Act
-            var messageContent = new MessageContent(maxLengthContent);
+            var messageContent = MessageContent.Create(maxLengthContent).Data;
 
             // Assert
             messageContent.Value.Should().Be(maxLengthContent);
@@ -60,8 +66,8 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithSameContent_ShouldReturnTrue()
         {
             // Arrange
-            var content1 = new MessageContent("Test message");
-            var content2 = new MessageContent("Test message");
+            var content1 = MessageContent.Create("Test message").Data;
+            var content2 = MessageContent.Create("Test message").Data;
 
             // Act & Assert
             content1.Should().Be(content2);
@@ -72,8 +78,8 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithDifferentContent_ShouldReturnFalse()
         {
             // Arrange
-            var content1 = new MessageContent("Test message 1");
-            var content2 = new MessageContent("Test message 2");
+            var content1 = MessageContent.Create("Test message 1").Data;
+            var content2 = MessageContent.Create("Test message 2").Data;
 
             // Act & Assert
             content1.Should().NotBe(content2);
@@ -84,7 +90,7 @@ namespace Domain.UnitTests.ValueObjects
         public void Equals_WithNull_ShouldReturnFalse()
         {
             // Arrange
-            var content = new MessageContent("Test message");
+            var content = MessageContent.Create("Test message").Data;
 
             // Act & Assert
             content.Equals(null).Should().BeFalse();
@@ -94,8 +100,8 @@ namespace Domain.UnitTests.ValueObjects
         public void GetHashCode_WithSameContent_ShouldReturnSameHashCode()
         {
             // Arrange
-            var content1 = new MessageContent("Test message");
-            var content2 = new MessageContent("Test message");
+            var content1 = MessageContent.Create("Test message").Data;
+            var content2 = MessageContent.Create("Test message").Data;
 
             // Act & Assert
             content1.GetHashCode().Should().Be(content2.GetHashCode());

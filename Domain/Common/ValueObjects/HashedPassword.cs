@@ -16,14 +16,25 @@ namespace Domain.Common.ValueObjects
 
         private const int iterations = 10000;
         private const int keySize = 32; // 256-bit
-
-        private HashedPassword() { }
-        public HashedPassword(string plain)
-        {
-            if (string.IsNullOrWhiteSpace(plain))
-                throw new ArgumentException("Password is required.");
+         
+        private HashedPassword(string plain)
+        { 
             Salt = GenerateSalt();
             Hash = GenerateHashPassword(plain, Salt);
+        }
+        public static ResultDTO<HashedPassword> Create(string plain)
+        {
+            List<string> errors = new List<string>();
+
+            if (string.IsNullOrWhiteSpace(plain))
+                errors.Add("Password is required.");
+            if (plain?.Length < 8)
+                errors.Add("Password must be at least 8 charachters.");
+
+            if(errors.Count > 0)
+                return ResultDTO<HashedPassword>.Failure("Invalid Password", errors, "Please fix the password input.");
+
+            return ResultDTO<HashedPassword>.Success("Valid Password", new HashedPassword(plain), "Password created successfully");
         }
         private string GenerateSalt()
         {
