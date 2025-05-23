@@ -53,11 +53,11 @@ namespace Domain.Entities
 
         public MessageDTO UpdateUserProfile(PersonFullName fullName, Email email, PhoneNumber phone, string bio, string location, string profilePicture)
         {
-            if (string.IsNullOrWhiteSpace(fullName.FirstName) && string.IsNullOrWhiteSpace(fullName.FirstName))
+            if (string.IsNullOrWhiteSpace(fullName?.FirstName) && string.IsNullOrWhiteSpace(fullName?.FirstName))
                 return MessageDTO.Failure("Empty Error", null, "FullName name cannot be empty");
-            if (string.IsNullOrWhiteSpace(phone.Value))
+            if (string.IsNullOrWhiteSpace(phone?.Value))
                 return MessageDTO.Failure("Empty Error", null, "Phone number cannot be empty");
-            if (string.IsNullOrWhiteSpace(email.Value))
+            if (string.IsNullOrWhiteSpace(email?.Value))
                 return MessageDTO.Failure("Empty Error", null, "Email cannot be empty");
             FullName = fullName;
             Email = email;
@@ -71,9 +71,9 @@ namespace Domain.Entities
         }
         public MessageDTO ChangePassword(string currentPassword, string newPassword)
         {
-            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 6)
+            if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
                 return MessageDTO.Failure("Empty Error", null, "New password cannot be empty or less than 6 charachters");
-            if (!HashedPassword.Verify(newPassword))
+            if (!HashedPassword.Verify(currentPassword))
                 return MessageDTO.Failure("Error", null, "Current password is incorrect");
             this.HashedPassword = HashedPassword.CreateFromPlain(newPassword);
 
