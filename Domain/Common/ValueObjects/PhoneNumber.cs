@@ -30,7 +30,7 @@ namespace Domain.Common.ValueObjects
             if (errors.Count > 0)
                 return ResultDTO<PhoneNumber>.Failure("Invalid Phone Number", errors, "Please fix the phone number input.");
 
-            return ResultDTO<PhoneNumber>.Success("Phone number created successfully", new PhoneNumber(phone), null);
+            return ResultDTO<PhoneNumber>.Success("Valid Phone Number", new PhoneNumber(phone), "Phone number created successfully");
         }
 
         protected override IEnumerable<object> GetEqualityComponents()

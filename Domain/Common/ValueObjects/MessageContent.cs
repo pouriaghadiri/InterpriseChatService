@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Domain.Common.ValueObjects
 {
-    class MessageContent : ValueObject
+    public class MessageContent : ValueObject
     {
         public string Value { get; private set; }
         private MessageContent() { }
