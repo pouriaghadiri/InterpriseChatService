@@ -18,8 +18,7 @@ namespace Application.Features.UserUseCase.Commands
             _unitOfWork = unitOfWork;
         }
 
-
-        async Task<MessageDTO> IRequestHandler<UpdateProfileUserCommand, MessageDTO>.Handle(UpdateProfileUserCommand request, CancellationToken cancellationToken)
+        public async Task<MessageDTO> Handle(UpdateProfileUserCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetbyIdAsync(request.Id);
             if (user == null)
@@ -36,18 +35,15 @@ namespace Application.Features.UserUseCase.Commands
             if (!phoneResult.IsSuccess)
                 return MessageDTO.Failure("Invalid input", phoneResult.Errors, "Phone number validation failed!");
 
-
             var result = user.UpdateUserProfile(personFullName, user.Email, phoneResult.Data, request.Bio, request.Location, request.ProfilePicture);
             if (!result.IsSuccess)
             {
                 return result;
             }
 
-
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return MessageDTO.Success("Updated", "User profile Updated successfully.");
-
         }
     }
 }

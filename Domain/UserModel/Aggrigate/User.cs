@@ -30,11 +30,11 @@ namespace Domain.Entities
         }
         public static ResultDTO<User> RegisterUser(PersonFullName fullName, Email email, HashedPassword hashedPassword, PhoneNumber phone, string profilePicture, string bio, string Location)
         {
-            if (string.IsNullOrWhiteSpace(fullName.FirstName) && string.IsNullOrWhiteSpace(fullName.LastName))
+            if (string.IsNullOrWhiteSpace(fullName?.FirstName) && string.IsNullOrWhiteSpace(fullName?.LastName))
                 return ResultDTO<User>.Failure("Empty Error",null,"FullName name cannot be empty");
-            if (string.IsNullOrWhiteSpace(phone.Value))
+            if (string.IsNullOrWhiteSpace(phone?.Value))
                 return ResultDTO<User>.Failure("Empty Error", null, "Phone number cannot be empty");
-            if (string.IsNullOrWhiteSpace(email.Value))
+            if (string.IsNullOrWhiteSpace(email?.Value))
                 return ResultDTO<User>.Failure("Empty Error", null, "Email cannot be empty");
 
             User newUser = new User()

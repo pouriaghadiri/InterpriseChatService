@@ -18,8 +18,7 @@ namespace Application.Features.UserUseCase.Commands
             _unitOfWork = unitOfWork;
         }
 
-
-        async Task<MessageDTO> IRequestHandler<ChangePasswordUserCommand, MessageDTO>.Handle(ChangePasswordUserCommand request, CancellationToken cancellationToken)
+        public async Task<MessageDTO> Handle(ChangePasswordUserCommand request, CancellationToken cancellationToken)
         {
             var user = await _userRepository.GetbyIdAsync(request.Id);
             if (user == null)
@@ -36,7 +35,6 @@ namespace Application.Features.UserUseCase.Commands
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             return MessageDTO.Success("Updated", "Password changed successfully.");
-
         }
     }
 }
