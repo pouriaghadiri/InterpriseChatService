@@ -11,7 +11,10 @@ namespace Domain.Common.ValueObjects
     public class Email : ValueObject
     {
         public string Value { get; private set; }
-         
+        public Email()
+        {
+            
+        }
         private Email(string email)
         { 
             Value = email.ToLowerInvariant();

@@ -16,7 +16,11 @@ namespace Domain.Common.ValueObjects
 
         private const int iterations = 10000;
         private const int keySize = 32; // 256-bit
-         
+
+        public HashedPassword()
+        {
+            
+        }
         private HashedPassword(string plain)
         { 
             Salt = GenerateSalt();

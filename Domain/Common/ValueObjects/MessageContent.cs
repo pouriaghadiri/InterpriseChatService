@@ -10,7 +10,7 @@ namespace Domain.Common.ValueObjects
     public class MessageContent : ValueObject
     {
         public string Value { get; private set; }
-        private MessageContent() { }
+        public MessageContent() { }
         private MessageContent(string value)
         { 
             Value = value;

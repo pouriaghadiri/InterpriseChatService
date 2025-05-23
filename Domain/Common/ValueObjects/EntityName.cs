@@ -8,9 +8,12 @@ using System.Threading.Tasks;
 namespace Domain.Common.ValueObjects
 {
     public class EntityName : ValueObject
-    {
-        private EntityName() { }
+    { 
         public string Value { get; private set; }
+        public EntityName()
+        {
+            
+        }
         private EntityName(string value)
         {
             Value = value;

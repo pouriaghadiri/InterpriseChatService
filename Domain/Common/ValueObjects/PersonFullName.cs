@@ -11,7 +11,7 @@ namespace Domain.Common.ValueObjects
     {
         public string FirstName { get; private set; }
         public string LastName { get; private set; }
-        private PersonFullName() { }
+        public PersonFullName() { }
         private PersonFullName(string firstName, string lastName)
         { 
             FirstName = firstName;
