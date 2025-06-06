@@ -19,6 +19,8 @@ namespace API.DependencyInjections
 
             // Register Repositories
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+            services.AddScoped<IRoleRepository, RoleRepository>();
 
             // Register UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();

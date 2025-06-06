@@ -28,6 +28,7 @@ namespace Domain.Entities
         {
             
         }
+        #region Users Methodes
         public static ResultDTO<User> RegisterUser(PersonFullName fullName, Email email, HashedPassword hashedPassword, PhoneNumber phone, string profilePicture, string bio, string Location)
         {
             if (string.IsNullOrWhiteSpace(fullName?.FirstName) && string.IsNullOrWhiteSpace(fullName?.LastName))
@@ -69,6 +70,7 @@ namespace Domain.Entities
             return MessageDTO.Success("Updated", "Your Profile Updated Successfully.");
 
         }
+        
         public MessageDTO ChangePassword(string currentPassword, string newPassword)
         {
             if (string.IsNullOrWhiteSpace(newPassword) || newPassword.Length < 8)
@@ -76,10 +78,55 @@ namespace Domain.Entities
             if (!HashedPassword.Verify(currentPassword))
                 return MessageDTO.Failure("Error", null, "Current password is incorrect");
             this.HashedPassword = HashedPassword.CreateFromPlain(newPassword);
-
+            Update();
             return MessageDTO.Success("Updated", "Your Password Updated Successfully");
 
         }
+        #endregion
+
+        #region Roles Methods
+
+        public MessageDTO AssignRoleToUser(Role role, Department department)
+        {
+            if (role == null)
+            {
+                return MessageDTO.Failure("Invalid Role", null, "Role is requiered!");
+            }
+            if (department == null)
+            {
+                return MessageDTO.Failure("Invalid department", null, "Department is requiered!");
+            }
+            var alreadyAssigned = UserRoles.SelectMany(s => s.UserRoleInDepartments)
+                                           .Where(x => x.DepartmentId == department.Id && x.UserRole.RoleId == role.Id)
+                                           .Any();
+            if (alreadyAssigned)
+            {
+                return MessageDTO.Failure("Doublicate Role", null, "User already has this role in the specified department.");
+            }
+
+            var userRole = UserRoles.FirstOrDefault(a => a.RoleId == role.Id);
+            if (userRole == null)
+            {
+                userRole = new UserRole()
+                {
+                    Role = role,
+                    User = this
+                };
+                UserRoles.Add(userRole);
+            }
+
+            var userRoleInDepartment = new UserRoleInDepartment()
+            {
+                UserRole = userRole,
+                Department = department,
+
+            };
+            userRole.UserRoleInDepartments.Add(userRoleInDepartment);
+            return MessageDTO.Success("Assigned", "Role assigned to user in department.");
+
+        }
+
+        #endregion
 
 
     }

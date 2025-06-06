@@ -34,6 +34,8 @@ namespace Persistence.Context
 
         public DbSet<User> Users => Set<User>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
+        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<Department> Departments => Set<Department>();
 
 
 

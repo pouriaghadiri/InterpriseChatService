@@ -7,10 +7,10 @@ using System.Threading.Tasks;
 
 namespace Domain.Entities
 {
-    class UserRoleInDepartment:Entity
+    public class UserRoleInDepartment:Entity
     { 
-        public int UserRoleId { get; set; }
-        public int DepartmentId { get; set; }
+        public Guid UserRoleId { get; set; }
+        public Guid DepartmentId { get; set; }
 
         public virtual Department Department { get; set; }
         public virtual UserRole UserRole{ get; set; }
