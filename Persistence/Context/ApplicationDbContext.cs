@@ -30,10 +30,15 @@ namespace Persistence.Context
             {
                 builder.OwnsOne(u => u.Name);
             });
+            modelBuilder.Entity<Department>(builder =>
+            {
+                builder.OwnsOne(u => u.Name);
+            });
         }
 
         public DbSet<User> Users => Set<User>();
         public DbSet<UserRole> UserRoles => Set<UserRole>();
+        public DbSet<UserRoleInDepartment> UserRoleInDepartments => Set<UserRoleInDepartment>();
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<Department> Departments => Set<Department>();
 
