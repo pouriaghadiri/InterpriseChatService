@@ -5,6 +5,7 @@ using Domain.Common.Exceptions;
 using Domain.Common.ValueObjects;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,7 +23,7 @@ namespace Domain.Entities
         public string Location { get; set; }
 
 
-        public virtual ICollection<UserRole> UserRoles { get; set; }
+        public virtual ICollection<UserRole> UserRoles { get; set; } = new Collection<UserRole>();
 
         private User()
         {
@@ -90,21 +91,26 @@ namespace Domain.Entities
         {
             if (role == null)
             {
-                return MessageDTO.Failure("Invalid Role", null, "Role is requiered!");
+                return MessageDTO.Failure("Invalid Role", null, "Role is required!");
             }
             if (department == null)
             {
-                return MessageDTO.Failure("Invalid department", null, "Department is requiered!");
+                return MessageDTO.Failure("Invalid department", null, "Department is required!");
             }
-            var alreadyAssigned = UserRoles.SelectMany(s => s.UserRoleInDepartments)
-                                           .Where(x => x.DepartmentId == department.Id && x.UserRole.RoleId == role.Id)
-                                           .Any();
-            if (alreadyAssigned)
+             
+
+            if (UserRoles != null && UserRoles.Any(a => a.UserRoleInDepartments.Any()))
             {
-                return MessageDTO.Failure("Doublicate Role", null, "User already has this role in the specified department.");
+                var alreadyAssigned = UserRoles.SelectMany(s => s.UserRoleInDepartments)
+                                           .Where(x => x.Department.Id == department.Id && x.UserRole.Role.Id == role.Id)
+                                           .Any();
+                if (alreadyAssigned)
+                {
+                    return MessageDTO.Failure("Doublicate Role", null, "User already has this role in the specified department.");
+                }
             }
 
-            var userRole = UserRoles.FirstOrDefault(a => a.RoleId == role.Id);
+            var userRole = UserRoles.FirstOrDefault(a => a.Role.Id == role.Id);
             if (userRole == null)
             {
                 userRole = new UserRole()
