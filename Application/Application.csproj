@@ -17,8 +17,6 @@
     <Folder Include="Features\RoleUseCase\DTOs\" />
     <Folder Include="Features\RoleUseCase\Queries\" />
     <Folder Include="Features\RoleUseCase\Validators\" />
-    <Folder Include="Features\UserUseCase\Queries\" />
-    <Folder Include="Features\UserUseCase\DTOs\" />
   </ItemGroup>
 
   <ItemGroup>
