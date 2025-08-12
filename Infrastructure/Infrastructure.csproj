@@ -9,8 +9,15 @@
   <ItemGroup>
     <Folder Include="ExternalServices\" />
     <Folder Include="Logging\" />
-    <Folder Include="Auth\" />
     <Folder Include="SignalR\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.13.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Application\Application.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,7 +1,9 @@
 ﻿
 
+using Application.Features.AuthUseCase.Interfaces;
 using Domain.Base.Interface;
 using Domain.Repositories;
+using Infrastructure.Auth;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 using Persistence.Repositories;
@@ -26,6 +28,10 @@ namespace API.DependencyInjections
 
             // Register UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            // Register Services
+            services.AddSingleton<IJwtTokenService, JwtTokenService>();
+
 
             // اگر سرویس دیگه‌ای داری، اینجا اضافه کن
 
