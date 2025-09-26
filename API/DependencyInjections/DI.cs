@@ -1,6 +1,6 @@
 ﻿
 
-using Application.Features.AuthUseCase.Interfaces;
+using Application.Features.AuthenticationUseCase.Interfaces;
 using Domain.Base.Interface;
 using Domain.Repositories;
 using Infrastructure.Auth;
@@ -25,6 +25,10 @@ namespace API.DependencyInjections
             services.AddScoped<IRoleRepository, RoleRepository>();
             services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             services.AddScoped<IUserRoleInDepartmentRepository, UserRoleInDepartmentRepository>();
+            
+            services.AddScoped<IPermissionRepository, PermissionRepository>();
+            services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
+            services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
 
             // Register UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -1,4 +1,4 @@
-﻿using Application.Features.AuthUseCase.DTOs;
+﻿using Application.Features.AuthenticationUseCase.DTOs;
 using Domain.Base;
 using MediatR;
 using System;
@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.AuthUseCase.Commands
+namespace Application.Features.AuthenticationUseCase.Commands
 {
     public class LoginCommand: IRequest<ResultDTO<TokenResultDTO>>
     {

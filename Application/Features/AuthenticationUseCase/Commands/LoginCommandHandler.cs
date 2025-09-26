@@ -1,5 +1,5 @@
-﻿using Application.Features.AuthUseCase.DTOs;
-using Application.Features.AuthUseCase.Interfaces;
+﻿using Application.Features.AuthenticationUseCase.DTOs;
+using Application.Features.AuthenticationUseCase.Interfaces;
 using Domain.Base;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
@@ -11,7 +11,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.AuthUseCase.Commands
+namespace Application.Features.AuthenticationUseCase.Commands
 {
     public class LoginCommandHandler: IRequestHandler<LoginCommand, ResultDTO<TokenResultDTO>>
     {

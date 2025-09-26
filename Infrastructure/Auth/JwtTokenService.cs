@@ -1,5 +1,5 @@
-﻿using Application.Features.AuthUseCase.DTOs;
-using Application.Features.AuthUseCase.Interfaces;
+﻿using Application.Features.AuthenticationUseCase.DTOs;
+using Application.Features.AuthenticationUseCase.Interfaces;
 using Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System;

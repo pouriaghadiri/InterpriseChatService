@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.AuthUseCase.DTOs
+namespace Application.Features.AuthenticationUseCase.DTOs
 {
     public class JwtSettingsDTO
     {

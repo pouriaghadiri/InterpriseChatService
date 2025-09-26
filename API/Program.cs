@@ -7,7 +7,7 @@ using FluentValidation;
 using MediatR;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc;
-using Application.Features.AuthUseCase.DTOs;
+using Application.Features.AuthenticationUseCase.DTOs;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;

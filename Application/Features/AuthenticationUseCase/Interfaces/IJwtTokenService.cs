@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.AuthUseCase.Interfaces
+namespace Application.Features.AuthenticationUseCase.Interfaces
 {
     public interface IJwtTokenService
     {

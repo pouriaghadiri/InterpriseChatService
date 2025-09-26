@@ -1,6 +1,6 @@
 using API.DTOs.Auth;
-using Application.Features.AuthUseCase.Commands;
-using Application.Features.AuthUseCase.DTOs;
+using Application.Features.AuthenticationUseCase.Commands;
+using Application.Features.AuthenticationUseCase.DTOs;
 using Application.Features.UserUseCase;
 using Application.Features.UserUseCase.Commands;
 using Application.Features.UserUseCase.Queries;
