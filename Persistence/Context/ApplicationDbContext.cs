@@ -34,6 +34,10 @@ namespace Persistence.Context
             {
                 builder.OwnsOne(u => u.Name);
             });
+            modelBuilder.Entity<Permission>(builder =>
+            {
+                builder.OwnsOne(u => u.Name);
+            });
         }
 
         public DbSet<User> Users => Set<User>();
@@ -41,6 +45,9 @@ namespace Persistence.Context
         public DbSet<UserRoleInDepartment> UserRoleInDepartments => Set<UserRoleInDepartment>();
         public DbSet<Role> Roles => Set<Role>();
         public DbSet<Department> Departments => Set<Department>();
+        public DbSet<Permission>  Permissions => Set<Permission>();
+        public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
+        public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
 
 
 
