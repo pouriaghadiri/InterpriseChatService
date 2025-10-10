@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.DepartmentUseCase.Commands
 {
-    class AddDepartmentCommandHandler : IRequestHandler<AddDepartmentCommand, MessageDTO>
+    public class AddDepartmentCommandHandler : IRequestHandler<AddDepartmentCommand, MessageDTO>
     {
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IUnitOfWork _unitOfWork;
@@ -23,17 +23,17 @@ namespace Application.Features.DepartmentUseCase.Commands
         }
         public async Task<MessageDTO> Handle(AddDepartmentCommand request, CancellationToken cancellationToken)
         {
-            var existDepartment = await _departmentRepository.ExistsAsync(x => x.Name == request.Name, cancellationToken);
+            var departmentName = EntityName.Create(request.Name);
+            if (!departmentName.IsSuccess)
+            {
+                return MessageDTO.Failure(departmentName.Title, departmentName.Errors, departmentName.Message);
+            }
+            var existDepartment = await _departmentRepository.ExistsAsync(x => x.Name.Value == departmentName.Data.Value, cancellationToken);
             if (existDepartment)
             {
                 return MessageDTO.Failure("Exist Error", null, "This department already exists!");
             }
 
-            var departmentName = EntityName.Create(request.Name?.Value);
-            if (!departmentName.IsSuccess)
-            {
-                return MessageDTO.Failure(departmentName.Title, departmentName.Errors, departmentName.Message);
-            }
 
             var newDepartment = Department.CreateDepartment(departmentName.Data);
             if (!newDepartment.IsSuccess)

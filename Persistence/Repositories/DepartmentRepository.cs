@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Persistence.Repositories
@@ -32,7 +33,26 @@ namespace Persistence.Repositories
         public async Task<Department?> GetbyIdAsync(Guid id)
         {
             return await _context.Departments.FirstOrDefaultAsync(x => x.Id == id);
-        } 
+        }
 
+        public async Task<List<Department>> GetAllAsync()
+        {
+            return await _context.Departments.ToListAsync();
+        }
+
+        public async Task UpdateAsync(Department department)
+        {
+            _context.Departments.Update(department);
+        }
+
+        public async Task DeleteAsync(Department department)
+        {
+            _context.Departments.Remove(department);
+        }
+
+        public async Task<bool> IsDepartmentInUseAsync(Guid departmentId, CancellationToken cancellationToken = default)
+        {
+            return await _context.UserRoleInDepartments.AnyAsync(urd => urd.DepartmentId == departmentId, cancellationToken);
+        }
     }
 }

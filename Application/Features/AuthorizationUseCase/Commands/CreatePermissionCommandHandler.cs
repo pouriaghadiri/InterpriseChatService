@@ -26,7 +26,7 @@ namespace Application.Features.AuthorizationUseCase.Commands
             {
                 return MessageDTO.Failure(permissionName.Title, permissionName.Errors, permissionName.Message);
             }
-            var exists = await _permissionRepository.ExistsAsync(x => x.Name == permissionName.Data, cancellationToken);
+            var exists = await _permissionRepository.ExistsAsync(x => x.Name.Value == permissionName.Data.Value, cancellationToken);
             if (exists)
             {
                 return MessageDTO.Failure("Exists", null, "Permission with the same name already exists.");

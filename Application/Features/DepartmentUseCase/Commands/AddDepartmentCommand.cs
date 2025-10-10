@@ -11,6 +11,6 @@ namespace Application.Features.DepartmentUseCase.Commands
 {
     public class AddDepartmentCommand:IRequest<MessageDTO>
     {
-        public EntityName Name{ get; set; }
+        public string Name{ get; set; }
     }
 }

@@ -10,7 +10,7 @@ namespace InterpriseChatService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+//[Authorize]
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
