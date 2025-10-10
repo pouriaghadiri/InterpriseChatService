@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.AuthorizationUseCase.Commands
 {
-    class AssignPermissionToRoleCommand:IRequest<MessageDTO>
+    public class AssignPermissionToRoleCommand:IRequest<MessageDTO>
     {
         public Guid RoleId { get; set; }
         public Guid PermissionId { get; set; }

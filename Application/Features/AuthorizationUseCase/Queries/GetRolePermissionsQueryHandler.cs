@@ -19,7 +19,7 @@ namespace Application.Features.AuthorizationUseCase.Queries
             {
                 return ResultDTO<List<PermissionDTO>>.Failure("Not Exist Error", new List<string> { "The selected role doesn't have exist!" }, "Please select a valid role.");
             }
-            var rolePermissions = await _unitOfWork.RolePermissions.GetRolePermissionsAsync(request.roleId, cancellationToken);
+            var rolePermissions = await _unitOfWork.RolePermissions.GetRolePermissionsAsync(request.roleId, request.departmentId, cancellationToken);
             if (rolePermissions == null || !rolePermissions.Any())
             {
                 return ResultDTO<List<PermissionDTO>>.Failure("No Permissions", new List<string> { "The role has no assigned permissions." }, "No permissions found for the role.");

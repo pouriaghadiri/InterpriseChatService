@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.AuthorizationUseCase.Commands
 {
-    class CreatePermissionCommand:IRequest<MessageDTO>
+    public class CreatePermissionCommand:IRequest<MessageDTO>
     {
         public string Name { get; set; }
         public string Description { get; set; }

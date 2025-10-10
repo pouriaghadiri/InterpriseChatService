@@ -33,5 +33,26 @@ namespace Persistence.Repositories
         {
             return await _context.Permissions.FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<List<Permission>> GetAllAsync()
+        {
+            return await _context.Permissions.ToListAsync();
+        }
+
+        public async Task UpdateAsync(Permission permission)
+        {
+            _context.Permissions.Update(permission);
+        }
+
+        public async Task DeleteAsync(Permission permission)
+        {
+            _context.Permissions.Remove(permission);
+        }
+
+        public async Task<bool> IsPermissionInUseAsync(Guid permissionId, CancellationToken cancellationToken = default)
+        {
+            return await _context.RolePermissions.AnyAsync(rp => rp.PermissionId == permissionId, cancellationToken) ||
+                   await _context.UserPermissions.AnyAsync(up => up.PermissionId == permissionId, cancellationToken);
+        }
     }
 }

@@ -33,11 +33,11 @@ namespace Persistence.Repositories
         {
             return await _context.RolePermissions.FirstOrDefaultAsync(x => x.Id == id);
         }
-        public async Task<List<RolePermission>> GetRolePermissionsAsync(Guid roleId, CancellationToken cancellationToken = default)
+        public async Task<List<RolePermission>> GetRolePermissionsAsync(Guid roleId, Guid departmentId, CancellationToken cancellationToken = default)
         {
             return await _context.RolePermissions
-                .Include(up => up.Permission)
-                .Where(up => up.RoleId == roleId)
+                .Include(rp => rp.Permission)
+                .Where(rp => rp.RoleId == roleId && rp.DepartmentId == departmentId)
                 .ToListAsync(cancellationToken);
         }
         //public async Task<bool> HasUserPermissionAsync(Guid userId, Guid departmentId, string permissionName)

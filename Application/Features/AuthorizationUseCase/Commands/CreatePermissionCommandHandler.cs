@@ -11,12 +11,12 @@ using System.Threading.Tasks;
 
 namespace Application.Features.AuthorizationUseCase.Commands
 {
-    class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, MessageDTO>
+    public class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, MessageDTO>
     {
         private readonly IPermissionRepository _permissionRepository;
         public CreatePermissionCommandHandler(IPermissionRepository permissionRepository)
         {
-            permissionRepository = _permissionRepository;
+            _permissionRepository = permissionRepository;
         }
 
         public async Task<MessageDTO> Handle(CreatePermissionCommand request, CancellationToken cancellationToken)

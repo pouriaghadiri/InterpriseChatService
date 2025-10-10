@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.AuthorizationUseCase.Queries
 {
-    public record GetRolePermissionsQuery(Guid roleId):IRequest<ResultDTO<List<PermissionDTO>>>
+    public record GetRolePermissionsQuery(Guid roleId, Guid departmentId):IRequest<ResultDTO<List<PermissionDTO>>>
     {
     }
 }
