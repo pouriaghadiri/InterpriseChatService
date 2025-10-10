@@ -39,7 +39,7 @@ public class AuthController : ControllerBase
 
 
     [HttpPost("register")]
-    [Authorize]
+    //[Authorize]
     public async Task<ActionResult<ResultDTO<Guid>>> Register([FromBody] RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);

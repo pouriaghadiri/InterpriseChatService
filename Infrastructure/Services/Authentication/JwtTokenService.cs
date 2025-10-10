@@ -1,5 +1,5 @@
 ﻿using Application.Features.AuthenticationUseCase.DTOs;
-using Application.Features.AuthenticationUseCase.Interfaces;
+using Application.Features.AuthenticationUseCase.Services;
 using Domain.Entities;
 using Microsoft.IdentityModel.Tokens;
 using System;
@@ -11,7 +11,7 @@ using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Infrastructure.Auth
+namespace Infrastructure.Services.Authentication
 {
     public class JwtTokenService : IJwtTokenService
     {

@@ -33,5 +33,13 @@ namespace Persistence.Repositories
         {
             return await _context.UserRoleInDepartments.FirstOrDefaultAsync(x => x.Id == id);
         }
+
+        public async Task<List<Role>> GetRolesOfUserInDepartment(Guid userId, Guid departmentId)
+        {
+            return await _context.UserRoleInDepartments.Where(x => x.UserRole.UserId == userId &&
+                                                                   x.DepartmentId == departmentId)
+                                                        .Select(s => s.UserRole.Role)
+                                                        .ToListAsync();
+        }
     }
 }

@@ -21,10 +21,12 @@ namespace Persistence.UnitOfWork
         public IUserPermissionRepository UserPermissions { get; }
         public IDepartmentRepository Departments { get; }
         public IUserRepository Users { get; }
+        public IUserRoleInDepartmentRepository userRoleInDepartment{ get; }
 
         public UnitOfWork(ApplicationDbContext context,IRoleRepository roleRepository, IPermissionRepository permissionRepository,
                           IRolePermissionRepository rolePermissionRepository, IUserPermissionRepository userPermissionRepository,
-                          IDepartmentRepository departmentRepository, IUserRepository userRepository)
+                          IDepartmentRepository departmentRepository, IUserRepository userRepository,
+                          IUserRoleInDepartmentRepository userRoleInDepartment)
         {
             _context = context;
             Roles = roleRepository;
@@ -33,6 +35,7 @@ namespace Persistence.UnitOfWork
             UserPermissions = userPermissionRepository;
             Departments = departmentRepository;
             Users = userRepository;
+            this.userRoleInDepartment = userRoleInDepartment;
         }
 
 

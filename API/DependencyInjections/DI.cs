@@ -1,13 +1,18 @@
 ﻿
 
-using Application.Features.AuthenticationUseCase.Interfaces;
+using Application.Features.AuthenticationUseCase.Services;
+using Application.Features.AuthorizationUseCase.Handlers;
+using Application.Features.AuthorizationUseCase.Provider;
+using Application.Features.AuthorizationUseCase.Services;
 using Domain.Base.Interface;
 using Domain.Repositories;
-using Infrastructure.Auth;
+using Infrastructure.Services.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 using Persistence.Repositories;
 using Persistence.UnitOfWork;
+using pplication.Features.AuthorizationUseCase.Services;
 
 namespace API.DependencyInjections
 {
@@ -35,7 +40,9 @@ namespace API.DependencyInjections
 
             // Register Services
             services.AddSingleton<IJwtTokenService, JwtTokenService>();
-
+            services.AddSingleton<IAuthorizationPolicyProvider, PermissionPolicyProvider>();
+            services.AddScoped<IPermissionService, PermissionService>();
+            services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
             // اگر سرویس دیگه‌ای داری، اینجا اضافه کن
 

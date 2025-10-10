@@ -15,6 +15,7 @@ namespace Domain.Base.Interface
         IUserPermissionRepository UserPermissions{ get; }
         IDepartmentRepository Departments { get; }
         IUserRepository Users { get; }
+        IUserRoleInDepartmentRepository userRoleInDepartment { get; }
 
         Task<int> SaveChangesAsync(CancellationToken cancellation = default);
         Task BeginTransactionAsync();

@@ -1,5 +1,5 @@
 ﻿using Application.Features.AuthenticationUseCase.DTOs;
-using Application.Features.AuthenticationUseCase.Interfaces;
+using Application.Features.AuthenticationUseCase.Services;
 using Domain.Base;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
