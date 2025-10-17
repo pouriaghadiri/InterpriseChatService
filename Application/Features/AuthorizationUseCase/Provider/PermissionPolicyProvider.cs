@@ -7,7 +7,7 @@ namespace Application.Features.AuthorizationUseCase.Provider
 
     public class PermissionPolicyProvider : IAuthorizationPolicyProvider
     {
-        const string POLICY_PREFIX = "PERMISSION_";
+        const string POLICY_PREFIX = "PERM_";
         private readonly DefaultAuthorizationPolicyProvider _fallbackPolicyProvider;
 
         public PermissionPolicyProvider(IOptions<AuthorizationOptions> options)

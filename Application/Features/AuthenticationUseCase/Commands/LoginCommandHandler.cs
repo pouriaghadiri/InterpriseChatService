@@ -4,6 +4,7 @@ using Domain.Base;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,14 @@ namespace Application.Features.AuthenticationUseCase.Commands
     {
         private readonly IUserRepository _userRepository;
         private readonly IJwtTokenService _jwtTokenService;
+        private readonly ICacheService _cacheService;
 
-        public LoginCommandHandler(IUserRepository userRepository, IJwtTokenService jwtTokenService)
+        public LoginCommandHandler(IUserRepository userRepository, IJwtTokenService jwtTokenService,
+                                   ICacheService cacheService)
         {
             _userRepository = userRepository;
-            _jwtTokenService = jwtTokenService;            
+            _jwtTokenService = jwtTokenService;
+            _cacheService = cacheService;
         }
         public async Task<ResultDTO<TokenResultDTO>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -62,6 +66,7 @@ namespace Application.Features.AuthenticationUseCase.Commands
                 ExpireTime = expireDate
             };
 
+            await _cacheService.SetAsync<TokenResultDTO>(request.Email, tokenResponse, expireDate.TimeOfDay);
             return ResultDTO<TokenResultDTO>.Success("OK", tokenResponse, "Logged in");
 
 

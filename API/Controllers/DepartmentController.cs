@@ -9,7 +9,7 @@ namespace InterpriseChatService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-//[Authorize]
+[Authorize]
 public class DepartmentController : ControllerBase
 {
     private readonly ILogger<DepartmentController> _logger;
@@ -56,6 +56,7 @@ public class DepartmentController : ControllerBase
     /// Get all departments
     /// </summary>
     /// <returns>List of all departments</returns>
+    [Authorize(Policy = "PERM_Department_All_View")]
     [HttpGet("all")]
     public async Task<IActionResult> GetAllDepartments()
     {
