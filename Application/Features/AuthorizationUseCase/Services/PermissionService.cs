@@ -23,13 +23,13 @@ namespace pplication.Features.AuthorizationUseCase.Services
         public async Task<bool> UserHasPermissionAsync(Guid userId, Guid departmentId, string permissionName)
         {
             var createPermissionName = EntityName.Create(permissionName);
-            if (!createPermissionName.IsSuccess)
+            if (!createPermissionName.IsSuccess || createPermissionName?.Data == null)
             {
                 return false;
             }
             var userHas = await _unitOfWork.UserPermissions.ExistsAsync(
                 up => up.UserId == userId && 
-                      up.Permission.Name == createPermissionName.Data && 
+                      up.Permission.Name.Value == createPermissionName.Data.Value && 
                       up.DepartmentId == departmentId);
 
             if (userHas) return true;
@@ -41,7 +41,7 @@ namespace pplication.Features.AuthorizationUseCase.Services
             }
             var roleHas = await _unitOfWork.RolePermissions.ExistsAsync(
                 rp => userRoles.Select(s => s.Id).Contains(rp.RoleId) &&
-                      rp.Permission.Name == createPermissionName.Data &&
+                      rp.Permission.Name.Value == createPermissionName.Data.Value &&
                       rp.DepartmentId == departmentId);
 
             return roleHas;

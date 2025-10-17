@@ -19,13 +19,15 @@ namespace Application.Features.AuthenticationUseCase.Commands
         private readonly IUserRepository _userRepository;
         private readonly IJwtTokenService _jwtTokenService;
         private readonly ICacheService _cacheService;
+        private readonly IActiveDepartmentService _activeDepartmentService;
 
         public LoginCommandHandler(IUserRepository userRepository, IJwtTokenService jwtTokenService,
-                                   ICacheService cacheService)
+                                   ICacheService cacheService, IActiveDepartmentService activeDepartmentService)
         {
             _userRepository = userRepository;
             _jwtTokenService = jwtTokenService;
             _cacheService = cacheService;
+            _activeDepartmentService = activeDepartmentService;
         }
         public async Task<ResultDTO<TokenResultDTO>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -60,13 +62,38 @@ namespace Application.Features.AuthenticationUseCase.Commands
 
             var token = _jwtTokenService.GenerateToken(userRes.Result, roles, out DateTime expireDate);
 
+            // Save user's active department to Redis
+            var user = userRes.Result;
+            if (user.ActiveDepartmentId.HasValue)
+            {
+                // If user already has an active department, cache it
+                await _activeDepartmentService.SetActiveDepartmentIdAsync(user.Id, user.ActiveDepartmentId.Value);
+            }
+            else
+            {
+                // If no active department, get the first department from user roles
+                var firstDepartment = user.UserRoles
+                    .SelectMany(ur => ur.UserRoleInDepartments)
+                    .Select(urid => urid.Department)
+                    .FirstOrDefault();
+
+                if (firstDepartment == null)
+                {
+                    return ResultDTO<TokenResultDTO>.Failure("Auth", null, "User has no valid department");
+
+                }
+                // Set the first department as active and cache it
+                await _activeDepartmentService.SetActiveDepartmentIdAsync(user.Id, firstDepartment.Id);
+                
+            }
+
             var tokenResponse = new TokenResultDTO
             {
                 Token = token,
                 ExpireTime = expireDate
             };
 
-            await _cacheService.SetAsync<TokenResultDTO>(request.Email, tokenResponse, expireDate.TimeOfDay);
+            await _cacheService.SetAsync<TokenResultDTO>($"UserEmail:{request.Email}", tokenResponse, expireDate.TimeOfDay - DateTime.Now.TimeOfDay);
             return ResultDTO<TokenResultDTO>.Success("OK", tokenResponse, "Logged in");
 
 

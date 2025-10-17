@@ -7,6 +7,7 @@ namespace Application.Common
         // User-related cache keys
         public static string UserKey(Guid userId) => $"user:{userId}";
         public static string UserByEmailKey(string email) => $"user:email:{email}";
+        public static string UserActiveDepartmentKey(Guid userId) => $"userId:{userId}:ActiveDepartmentId";
         public static string UserPermissionsKey(Guid userId, Guid? departmentId = null) 
             => departmentId.HasValue ? $"user:{userId}:permissions:{departmentId}" : $"user:{userId}:permissions:global";
         

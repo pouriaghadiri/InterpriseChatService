@@ -1,5 +1,6 @@
 ﻿using Application.Features.AuthorizationUseCase.Requirement;
 using Application.Features.AuthorizationUseCase.Services;
+using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
@@ -13,10 +14,12 @@ namespace Application.Features.AuthorizationUseCase.Handlers
     public class PermissionHandler : AuthorizationHandler<PermissionRequirement>
     {
         private readonly IPermissionService _permissionService;
+        private readonly IActiveDepartmentService _activeDepartmentService;
 
-        public PermissionHandler(IPermissionService permissionService)
+        public PermissionHandler(IPermissionService permissionService, IActiveDepartmentService activeDepartmentService)
         {
             _permissionService = permissionService;
+            _activeDepartmentService = activeDepartmentService;
         }
 
         protected override async Task HandleRequirementAsync(
@@ -28,13 +31,13 @@ namespace Application.Features.AuthorizationUseCase.Handlers
             if (!Guid.TryParse(userIdString, out var userId))
                 throw new UnauthorizedAccessException("Invalid user id in token.");
             
-            var departmentClaim = context.User.FindFirst("DepartmentId");
-            if (departmentClaim == null)
-                throw new UnauthorizedAccessException("Users department Couldn't find.");
-            if (!Guid.TryParse(departmentClaim.Value, out var departmentId))
-                throw new UnauthorizedAccessException("Invalid department id in token.");
+            // Get active department from Redis cache (with database fallback)
+            var activeDepartmentId = await _activeDepartmentService.GetActiveDepartmentIdAsync(userId);
+            
+            if (activeDepartmentId == null)
+                throw new UnauthorizedAccessException("User has no active department. Please contact administrator.");
 
-            var hasPermission = await _permissionService.UserHasPermissionAsync(userId, departmentId, requirement.Permission);
+            var hasPermission = await _permissionService.UserHasPermissionAsync(userId, activeDepartmentId.Value, requirement.Permission);
 
             if (hasPermission)
                 context.Succeed(requirement);

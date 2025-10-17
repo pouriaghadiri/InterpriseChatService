@@ -21,10 +21,11 @@ namespace Domain.Entities
         public string ProfilePicture { get; set; }
         public string Bio { get; set; }
         public string Location { get; set; }
+        public Guid? ActiveDepartmentId { get; set; }
 
 
         public virtual ICollection<UserRole> UserRoles { get; set; } = new Collection<UserRole>();
-
+        public virtual Department ActiveDepartment { get; set; }
         private User()
         {
             
@@ -82,6 +83,16 @@ namespace Domain.Entities
             Update();
             return MessageDTO.Success("Updated", "Your Password Updated Successfully");
 
+        }
+
+        public MessageDTO SetActiveDepartment(Guid departmentId)
+        {
+            if (departmentId == Guid.Empty)
+                return MessageDTO.Failure("Invalid Department", null, "Department ID cannot be empty");
+
+            ActiveDepartmentId = departmentId;
+            Update();
+            return MessageDTO.Success("Updated", "Active department updated successfully");
         }
         #endregion
 

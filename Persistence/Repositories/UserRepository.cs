@@ -30,12 +30,24 @@ namespace Persistence.Repositories
 
         public async Task<User?> GetbyEmailAsync(Email email)
         {
-            return await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(x => x.Email.Value == email.Value);
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.UserRoleInDepartments)
+                        .ThenInclude(urid => urid.Department)
+                .FirstOrDefaultAsync(x => x.Email.Value == email.Value);
         }
 
         public async Task<User?> GetbyIdAsync(Guid id)
         {
-            return await _context.Users.Include(u => u.UserRoles).FirstOrDefaultAsync(x => x.Id == id);
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.UserRoleInDepartments)
+                        .ThenInclude(urid => urid.Department)
+                .FirstOrDefaultAsync(x => x.Id == id);
         } 
     }
 }
