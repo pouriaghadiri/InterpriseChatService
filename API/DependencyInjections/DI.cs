@@ -6,6 +6,8 @@ using Application.Features.AuthorizationUseCase.Provider;
 using Application.Features.AuthorizationUseCase.Services;
 using Domain.Base.Interface;
 using Domain.Repositories;
+using Domain.Services;
+using Infrastructure.Extensions;
 using Infrastructure.Services.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -44,7 +46,8 @@ namespace API.DependencyInjections
             services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IAuthorizationHandler, PermissionHandler>();
 
-            // اگر سرویس دیگه‌ای داری، اینجا اضافه کن
+            // Register Redis Cache
+            services.AddRedisCache(configuration);
 
             return services;
         }
