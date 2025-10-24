@@ -47,9 +47,13 @@ namespace API.DependencyInjections
             services.AddScoped<IPermissionService, PermissionService>();
             services.AddScoped<IAuthorizationHandler, PermissionHandler>();
             services.AddScoped<IActiveDepartmentService, ActiveDepartmentService>();
+            services.AddScoped<ICacheInvalidationService, CacheInvalidationService>();
 
             // Register Redis Cache
             services.AddRedisCache(configuration);
+
+            // Register HttpContextAccessor for accessing current user context
+            services.AddHttpContextAccessor();
 
             return services;
         }
