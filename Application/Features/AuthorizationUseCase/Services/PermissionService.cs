@@ -1,11 +1,11 @@
-﻿using Application.Features.AuthorizationUseCase.Services;
+﻿using Application.Common;
+using Application.Features.AuthorizationUseCase.Services;
 using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Repositories;
+using Domain.Services;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace pplication.Features.AuthorizationUseCase.Services
@@ -14,10 +14,12 @@ namespace pplication.Features.AuthorizationUseCase.Services
     public class PermissionService : IPermissionService
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheService _cacheService;
 
-        public PermissionService(IUnitOfWork unitOfWork)
+        public PermissionService(IUnitOfWork unitOfWork, ICacheService cacheService)
         {
             _unitOfWork = unitOfWork;
+            _cacheService = cacheService;
         }
 
         public async Task<bool> UserHasPermissionAsync(Guid userId, Guid departmentId, string permissionName)
@@ -27,24 +29,23 @@ namespace pplication.Features.AuthorizationUseCase.Services
             {
                 return false;
             }
-            var userHas = await _unitOfWork.UserPermissions.ExistsAsync(
-                up => up.UserId == userId && 
-                      up.Permission.Name.Value == createPermissionName.Data.Value && 
-                      up.DepartmentId == departmentId);
 
-            if (userHas) return true;
-
-            var userRoles = await _unitOfWork.userRoleInDepartment.GetRolesOfUserInDepartment(userId, departmentId);
-            if (userRoles == null || !userRoles.Any())
+            var cacheKey = CacheHelper.UserAllPermissionsKey(userId, departmentId);
+            var cachedPermissions = await _cacheService.GetAsync<HashSet<string>>(cacheKey);
+            
+            if (cachedPermissions == null)
             {
-                return false;
+                // Get all permissions (user + role permissions) from database
+                var allPermissions = await _unitOfWork.UserPermissions.GetAllUserPermissionsAsync(userId, departmentId);
+                
+                // Cache the result
+                await _cacheService.SetAsync(cacheKey, allPermissions, CacheHelper.Expiration.Permission);
+                
+                return allPermissions.Contains(createPermissionName.Data.Value);
             }
-            var roleHas = await _unitOfWork.RolePermissions.ExistsAsync(
-                rp => userRoles.Select(s => s.Id).Contains(rp.RoleId) &&
-                      rp.Permission.Name.Value == createPermissionName.Data.Value &&
-                      rp.DepartmentId == departmentId);
-
-            return roleHas;
+            
+            // Use cached permissions
+            return cachedPermissions.Contains(createPermissionName.Data.Value);
         }
     }
 }
