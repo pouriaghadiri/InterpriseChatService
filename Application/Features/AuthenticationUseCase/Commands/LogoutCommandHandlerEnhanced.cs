@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Security.Claims;
+using Application.Common;
 
 namespace Application.Features.AuthenticationUseCase.Commands
 {
@@ -121,7 +122,8 @@ namespace Application.Features.AuthenticationUseCase.Commands
             {
                 // Add token to blacklist with expiration time
                 var blacklistKey = CacheHelper.TokenBlacklistKey(token);
-                await _cacheService.SetAsync(blacklistKey, true, CacheHelper.Expiration.TokenBlacklist);
+                var blacklistValue = new { Blacklisted = true, Timestamp = DateTime.UtcNow };
+                await _cacheService.SetAsync(blacklistKey, blacklistValue, CacheHelper.Expiration.TokenBlacklist);
             }
             catch
             {

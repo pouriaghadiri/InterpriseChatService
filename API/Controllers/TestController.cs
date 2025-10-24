@@ -1,11 +1,13 @@
 using Application.Features.UserUseCase;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace InterpriseChatService.Controllers;
 
 [ApiController]
 [Route("[controller]")]
+[EnableRateLimiting("ApiPolicy")]
 public class TestController : ControllerBase
 {
     private static readonly string[] Summaries = new[]

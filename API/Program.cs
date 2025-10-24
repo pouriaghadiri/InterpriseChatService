@@ -1,5 +1,6 @@
 ﻿
 using API.DependencyInjections;
+using API.Middlewares;
 using Application;
 using Application.Common;
 using Application.Features.UserUseCase.Validators;
@@ -13,6 +14,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.RateLimiting;
 
 
 internal class Program
@@ -23,6 +26,38 @@ internal class Program
 
         // Add services to the container.
         builder.Services.AddDependencyInjections(builder.Configuration);
+
+        // Add CORS
+        builder.Services.AddCors(options =>
+        {
+            options.AddPolicy("AllowSpecificOrigins", policy =>
+            {
+                policy.WithOrigins("https://localhost:3000", "https://yourdomain.com")
+                      .AllowAnyHeader()
+                      .AllowAnyMethod()
+                      .AllowCredentials();
+            });
+        });
+
+        // Add Rate Limiting
+        builder.Services.AddRateLimiter(options =>
+        {
+            options.AddFixedWindowLimiter("ApiPolicy", opt =>
+            {
+                opt.PermitLimit = 100;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 10;
+            });
+            
+            options.AddFixedWindowLimiter("AuthPolicy", opt =>
+            {
+                opt.PermitLimit = 5;
+                opt.Window = TimeSpan.FromMinutes(1);
+                opt.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+                opt.QueueLimit = 2;
+            });
+        });
 
         builder.Services.AddControllers();
         // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -103,11 +138,21 @@ internal class Program
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
+        
+        // Add security middleware (order matters!)
+        app.UseMiddleware<SecurityHeadersMiddleware>();
+        app.UseMiddleware<GlobalExceptionMiddleware>();
+        
+        // Add CORS
+        app.UseCors("AllowSpecificOrigins");
+        
+        // Add Rate Limiting
+        app.UseRateLimiter();
+
         if (app.Environment.IsDevelopment())
         {
             app.UseSwaggerUI();
             app.UseSwagger();
-
         }
 
         app.UseHttpsRedirection();

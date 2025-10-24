@@ -7,6 +7,7 @@ using Domain.Base;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace InterpriseChatService.Controllers;
 
@@ -30,6 +31,7 @@ public class AuthController : ControllerBase
     /// <returns>JWT token and expiration</returns>
     [HttpPost("login")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthPolicy")]
     public async Task<ActionResult<ResultDTO<TokenResultDTO>>> Login([FromBody] LoginRequestDTO login)
     {
         var result = await _mediator.Send(new LoginCommand { Email = login.Email, Password = login.Password });
@@ -47,6 +49,7 @@ public class AuthController : ControllerBase
     /// <returns>Registration result</returns>
     [HttpPost("register")]
     [AllowAnonymous]
+    [EnableRateLimiting("AuthPolicy")]
     public async Task<ActionResult<ResultDTO<Guid>>> Register([FromBody] RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);

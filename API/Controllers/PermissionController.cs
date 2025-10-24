@@ -4,11 +4,13 @@ using Domain.Base;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 namespace InterpriseChatService.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[EnableRateLimiting("ApiPolicy")]
 [Authorize]
 public class PermissionController : ControllerBase
 {
