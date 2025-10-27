@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.UserUseCase.Commands
 {
-    class AssignRoleToUserCommand:IRequest<MessageDTO>
+    public class AssignRoleToUserCommand:IRequest<MessageDTO>
     {
         public Role Role{ get; set; }
         public Department Department { get; set; }

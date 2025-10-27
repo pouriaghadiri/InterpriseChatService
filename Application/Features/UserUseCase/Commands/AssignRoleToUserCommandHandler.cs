@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.UserUseCase.Commands
 {
-    class AssignRoleToUserCommandHandler : IRequestHandler<AssignRoleToUserCommand, MessageDTO>
+    public class AssignRoleToUserCommandHandler : IRequestHandler<AssignRoleToUserCommand, MessageDTO>
     {
         private readonly IRoleRepository _roleRepository;
         private readonly IUserRepository _userRepository;

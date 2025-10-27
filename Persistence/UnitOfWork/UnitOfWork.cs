@@ -1,14 +1,7 @@
 ﻿
 using Domain.Base.Interface;
 using Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Persistence.UnitOfWork
 {
