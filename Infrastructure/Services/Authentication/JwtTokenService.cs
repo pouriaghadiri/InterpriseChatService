@@ -49,6 +49,68 @@ namespace Infrastructure.Services.Authentication
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+        public ClaimsPrincipal? ValidateToken(string token, bool validateExpiration = true)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var key = Encoding.UTF8.GetBytes(_jwtSettings.Key);
+
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+                    ValidateIssuer = true,
+                    ValidIssuer = _jwtSettings.Issuer,
+                    ValidateAudience = true,
+                    ValidAudience = _jwtSettings.Audience,
+                    ValidateLifetime = validateExpiration,
+                    ClockSkew = TimeSpan.Zero
+                };
+
+                var principal = tokenHandler.ValidateToken(token, validationParameters, out SecurityToken validatedToken);
+                return principal;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public Guid? GetUserIdFromToken(string token)
+        {
+            try
+            {
+                var principal = ValidateToken(token, validateExpiration: false);
+                if (principal == null)
+                    return null;
+
+                var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
+                    return null;
+
+                return userId;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public bool IsTokenExpired(string token)
+        {
+            try
+            {
+                var tokenHandler = new JwtSecurityTokenHandler();
+                var jwtToken = tokenHandler.ReadJwtToken(token);
+                return jwtToken.ValidTo < DateTime.UtcNow;
+            }
+            catch
+            {
+                return true;
+            }
+        }
     }
     
 }

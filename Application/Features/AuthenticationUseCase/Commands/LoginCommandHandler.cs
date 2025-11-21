@@ -20,14 +20,17 @@ namespace Application.Features.AuthenticationUseCase.Commands
         private readonly IJwtTokenService _jwtTokenService;
         private readonly ICacheService _cacheService;
         private readonly IActiveDepartmentService _activeDepartmentService;
+        private readonly IUserRoleInDepartmentRepository _userRoleInDepartmentRepository;
 
         public LoginCommandHandler(IUserRepository userRepository, IJwtTokenService jwtTokenService,
-                                   ICacheService cacheService, IActiveDepartmentService activeDepartmentService)
+                                   ICacheService cacheService, IActiveDepartmentService activeDepartmentService,
+                                   IUserRoleInDepartmentRepository userRoleInDepartmentRepository)
         {
             _userRepository = userRepository;
             _jwtTokenService = jwtTokenService;
             _cacheService = cacheService;
             _activeDepartmentService = activeDepartmentService;
+            _userRoleInDepartmentRepository = userRoleInDepartmentRepository;
         }
         public async Task<ResultDTO<TokenResultDTO>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -49,25 +52,15 @@ namespace Application.Features.AuthenticationUseCase.Commands
                 return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Invalid credentials");
             }
 
-            var roles = userRes.Result.UserRoles.Select(x => x.Role.Name.Value).ToList();
-
-            //// اگر Permission داریم از Role->Permission map یا جدولی بگیر:
-            //var permissions = new List<string>();
-            //foreach (var ur in user.UserRoles)
-            //{
-            //    // اگر نقش شامل Permission collection است:
-            //    if (ur.Role.Permissions != null)
-            //        permissions.AddRange(ur.Role.Permissions.Select(p => p.Name));
-            //}
-
-            var token = _jwtTokenService.GenerateToken(userRes.Result, roles, out DateTime expireDate);
-
-            // Save user's active department to Redis
             var user = userRes.Result;
+            Guid activeDepartmentId;
+
+            // Get user's default/active department first
             if (user.ActiveDepartmentId.HasValue)
             {
-                // If user already has an active department, cache it
-                await _activeDepartmentService.SetActiveDepartmentIdAsync(user.Id, user.ActiveDepartmentId.Value);
+                // If user already has an active department, use it
+                activeDepartmentId = user.ActiveDepartmentId.Value;
+                await _activeDepartmentService.SetActiveDepartmentIdAsync(user.Id, activeDepartmentId);
             }
             else
             {
@@ -80,12 +73,33 @@ namespace Application.Features.AuthenticationUseCase.Commands
                 if (firstDepartment == null)
                 {
                     return ResultDTO<TokenResultDTO>.Failure("Auth", null, "User has no valid department");
-
                 }
-                // Set the first department as active and cache it
-                await _activeDepartmentService.SetActiveDepartmentIdAsync(user.Id, firstDepartment.Id);
                 
+                // Set the first department as active and cache it
+                activeDepartmentId = firstDepartment.Id;
+                await _activeDepartmentService.SetActiveDepartmentIdAsync(user.Id, activeDepartmentId);
             }
+
+            // Get roles of user based on the default department
+            var rolesInDepartment = await _userRoleInDepartmentRepository.GetRolesOfUserInDepartment(user.Id, activeDepartmentId);
+            var roles = rolesInDepartment.Select(x => x.Name.Value).ToList();
+
+            if (roles == null || roles.Count == 0)
+            {
+                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "User has no roles in the active department");
+            }
+
+            //// اگر Permission داریم از Role->Permission map یا جدولی بگیر:
+            //var permissions = new List<string>();
+            //foreach (var ur in user.UserRoles)
+            //{
+            //    // اگر نقش شامل Permission collection است:
+            //    if (ur.Role.Permissions != null)
+            //        permissions.AddRange(ur.Role.Permissions.Select(p => p.Name));
+            //}
+
+            // Generate token with roles based on the default department
+            var token = _jwtTokenService.GenerateToken(user, roles, out DateTime expireDate);
 
             var tokenResponse = new TokenResultDTO
             {

@@ -10,12 +10,15 @@ using Domain.Services;
 using Infrastructure.Extensions;
 using Infrastructure.Services;
 using Infrastructure.Services.Authentication;
+using Infrastructure.Services.Email;
+using Application.Common.DTOs;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
 using Persistence.Repositories;
 using Persistence.UnitOfWork;
 using pplication.Features.AuthorizationUseCase.Services;
+using Microsoft.Extensions.Options;
 
 namespace API.DependencyInjections
 {
@@ -48,6 +51,11 @@ namespace API.DependencyInjections
             services.AddScoped<IAuthorizationHandler, PermissionHandler>();
             services.AddScoped<IActiveDepartmentService, ActiveDepartmentService>();
             services.AddScoped<ICacheInvalidationService, CacheInvalidationService>();
+            services.AddScoped<IEmailService, SmtpEmailService>();
+
+            // Configure Email Settings
+            services.Configure<EmailSettingsDTO>(configuration.GetSection("EmailSettings"));
+            services.AddSingleton(sp => sp.GetRequiredService<IOptions<EmailSettingsDTO>>().Value);
 
             // Register Redis Cache
             services.AddRedisCache(configuration);

@@ -1,0 +1,15 @@
+namespace Application.Common.DTOs
+{
+    public class EmailSettingsDTO
+    {
+        public string SmtpServer { get; set; } = string.Empty;
+        public int SmtpPort { get; set; } = 587;
+        public string SmtpUsername { get; set; } = string.Empty;
+        public string SmtpPassword { get; set; } = string.Empty;
+        public bool EnableSsl { get; set; } = true;
+        public string FromEmail { get; set; } = string.Empty;
+        public string FromName { get; set; } = string.Empty;
+        public string BaseUrl { get; set; } = string.Empty; // For generating reset links
+    }
+}
+

@@ -1,8 +1,10 @@
+using Application.Common.DTOs;
 using Application.Features.AuthenticationUseCase.Commands;
 using Domain.Base;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using FluentAssertions;
 using Moq;
 using System.Threading.Tasks;
@@ -13,13 +15,26 @@ namespace Tests.Application.Authentication.Commands
     public class ForgotPasswordCommandHandlerTests
     {
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<ICacheService> _cacheServiceMock;
+        private readonly Mock<IEmailService> _emailServiceMock;
+        private readonly EmailSettingsDTO _emailSettings;
         private readonly ForgotPasswordCommandHandler _handler;
         private readonly ForgotPasswordCommand _request;
 
         public ForgotPasswordCommandHandlerTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _handler = new ForgotPasswordCommandHandler(_userRepositoryMock.Object);
+            _cacheServiceMock = new Mock<ICacheService>();
+            _emailServiceMock = new Mock<IEmailService>();
+            _emailSettings = new EmailSettingsDTO
+            {
+                BaseUrl = "https://localhost:7065"
+            };
+            _handler = new ForgotPasswordCommandHandler(
+                _userRepositoryMock.Object,
+                _cacheServiceMock.Object,
+                _emailServiceMock.Object,
+                _emailSettings);
 
             _request = new ForgotPasswordCommand
             {
@@ -35,6 +50,18 @@ namespace Tests.Application.Authentication.Commands
             _userRepositoryMock
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
                 .ReturnsAsync(user);
+
+            _cacheServiceMock
+                .Setup(service => service.GetAsync<string>(It.IsAny<string>()))
+                .ReturnsAsync((string)null);
+
+            _cacheServiceMock
+                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>()))
+                .Returns(Task.CompletedTask);
+
+            _emailServiceMock
+                .Setup(service => service.SendPasswordResetEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);

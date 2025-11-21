@@ -28,6 +28,10 @@ namespace Application.Common
         // Session-related cache keys
         public static string UserSessionKey(Guid userId) => $"session:{userId}";
         public static string TokenBlacklistKey(string token) => $"blacklist:{token}";
+        public static string PasswordResetTokenKey(string token) => $"password-reset:{token}";
+        public static string PasswordResetTokenByEmailKey(string email) => $"password-reset:email:{email}";
+        public static string EmailVerificationTokenKey(string token) => $"email-verification:{token}";
+        public static string EmailVerificationTokenByEmailKey(string email) => $"email-verification:email:{email}";
         
         // Cache expiration times
         public static class Expiration
@@ -38,6 +42,8 @@ namespace Application.Common
             public static readonly TimeSpan Permission = TimeSpan.FromHours(4);
             public static readonly TimeSpan Session = TimeSpan.FromDays(1);
             public static readonly TimeSpan TokenBlacklist = TimeSpan.FromDays(7);
+            public static readonly TimeSpan PasswordResetToken = TimeSpan.FromHours(1); // 1 hour expiration
+            public static readonly TimeSpan EmailVerificationToken = TimeSpan.FromDays(7); // 7 days expiration
         }
     }
 }

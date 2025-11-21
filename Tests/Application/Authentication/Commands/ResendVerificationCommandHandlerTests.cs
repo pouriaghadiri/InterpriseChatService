@@ -1,8 +1,10 @@
+using Application.Common.DTOs;
 using Application.Features.AuthenticationUseCase.Commands;
 using Domain.Base;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using FluentAssertions;
 using Moq;
 using System.Threading.Tasks;
@@ -13,13 +15,26 @@ namespace Tests.Application.Authentication.Commands
     public class ResendVerificationCommandHandlerTests
     {
         private readonly Mock<IUserRepository> _userRepositoryMock;
+        private readonly Mock<ICacheService> _cacheServiceMock;
+        private readonly Mock<IEmailService> _emailServiceMock;
+        private readonly EmailSettingsDTO _emailSettings;
         private readonly ResendVerificationCommandHandler _handler;
         private readonly ResendVerificationCommand _request;
 
         public ResendVerificationCommandHandlerTests()
         {
             _userRepositoryMock = new Mock<IUserRepository>();
-            _handler = new ResendVerificationCommandHandler(_userRepositoryMock.Object);
+            _cacheServiceMock = new Mock<ICacheService>();
+            _emailServiceMock = new Mock<IEmailService>();
+            _emailSettings = new EmailSettingsDTO
+            {
+                BaseUrl = "https://localhost:7065"
+            };
+            _handler = new ResendVerificationCommandHandler(
+                _userRepositoryMock.Object,
+                _cacheServiceMock.Object,
+                _emailServiceMock.Object,
+                _emailSettings);
 
             _request = new ResendVerificationCommand
             {
@@ -36,13 +51,25 @@ namespace Tests.Application.Authentication.Commands
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
                 .ReturnsAsync(user);
 
+            _cacheServiceMock
+                .Setup(service => service.GetAsync<string>(It.IsAny<string>()))
+                .ReturnsAsync((string)null);
+
+            _cacheServiceMock
+                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>()))
+                .Returns(Task.CompletedTask);
+
+            _emailServiceMock
+                .Setup(service => service.SendEmailVerificationEmailAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(true);
+
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
-            result.Message.Should().Contain("Verification email has been sent");
+            result.Message.Should().Contain("verification email has been sent");
         }
 
         [Fact]
@@ -61,7 +88,7 @@ namespace Tests.Application.Authentication.Commands
         }
 
         [Fact]
-        public async Task Handle_Should_Return_Failure_WhenUserNotFound()
+        public async Task Handle_Should_Return_Success_WhenUserNotFound()
         {
             // Arrange
             _userRepositoryMock
@@ -72,9 +99,10 @@ namespace Tests.Application.Authentication.Commands
             var result = await _handler.Handle(_request, CancellationToken.None);
 
             // Assert
+            // For security, should return success even if user doesn't exist
             result.Should().NotBeNull();
-            result.IsSuccess.Should().BeFalse();
-            result.Title.Should().Be("User Not Found");
+            result.IsSuccess.Should().BeTrue();
+            result.Message.Should().Contain("verification email has been sent");
         }
 
         private User CreateTestUser()

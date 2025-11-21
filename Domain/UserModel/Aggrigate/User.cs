@@ -22,7 +22,7 @@ namespace Domain.Entities
         public string Bio { get; set; }
         public string Location { get; set; }
         public Guid? ActiveDepartmentId { get; set; }
-
+        public bool IsEmailVerified { get; private set; } = false;
 
         public virtual ICollection<UserRole> UserRoles { get; set; } = new Collection<UserRole>();
         public virtual Department ActiveDepartment { get; set; }
@@ -48,7 +48,8 @@ namespace Domain.Entities
                Phone = phone,
                ProfilePicture = profilePicture,
                Bio = bio,
-               Location = Location
+               Location = Location,
+               IsEmailVerified = false // New users start with unverified email
            };
 
             return ResultDTO<User>.Success("Created", newUser, "New User registered Successfully.");
@@ -93,6 +94,18 @@ namespace Domain.Entities
             ActiveDepartmentId = departmentId;
             Update();
             return MessageDTO.Success("Updated", "Active department updated successfully");
+        }
+
+        public MessageDTO MarkEmailAsVerified()
+        {
+            if (IsEmailVerified)
+            {
+                return MessageDTO.Failure("Already Verified", null, "Email is already verified");
+            }
+
+            IsEmailVerified = true;
+            Update();
+            return MessageDTO.Success("Verified", "Email has been verified successfully");
         }
         #endregion
 
