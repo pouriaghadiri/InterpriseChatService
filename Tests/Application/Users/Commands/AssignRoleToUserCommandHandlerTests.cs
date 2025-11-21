@@ -41,7 +41,7 @@ namespace Tests.UnitTest.Users.Commands
             var user = CreateTestUser();
             var role = CreateTestRole();
             var department = CreateTestDepartment();
-
+            
             _request = new AssignRoleToUserCommand
             {
                 User = user,
@@ -120,7 +120,7 @@ namespace Tests.UnitTest.Users.Commands
                 .ReturnsAsync(true);
             _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            
+
             // Mock that user already has this role in this department
             _userRoleInDepartmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<UserRoleInDepartment, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
@@ -146,7 +146,7 @@ namespace Tests.UnitTest.Users.Commands
                 .ReturnsAsync(true);
             _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            
+
             // Mock that user doesn't have this role in this department
             _userRoleInDepartmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<UserRoleInDepartment, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
@@ -174,13 +174,13 @@ namespace Tests.UnitTest.Users.Commands
         }
 
         private Role CreateTestRole()
-        {
+            {
             var name = EntityName.Create("Admin").Data;
             return Role.CreateRole(name, "Administrator role").Data;
         }
 
         private Department CreateTestDepartment()
-        {
+            {
             var name = EntityName.Create("Engineering").Data;
             return Department.CreateDepartment(name).Data;
         }

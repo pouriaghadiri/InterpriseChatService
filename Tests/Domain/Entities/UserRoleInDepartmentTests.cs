@@ -47,5 +47,5 @@ namespace Tests.Domain.Entities
             // Assert
             userRoleInDepartment.Should().BeAssignableTo<Entity>();
         }
-    }
+        }
 }
