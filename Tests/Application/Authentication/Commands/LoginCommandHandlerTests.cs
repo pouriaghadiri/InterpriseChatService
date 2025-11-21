@@ -14,6 +14,8 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
+using RoleEntity = Domain.Entities.Role;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Authentication.Commands
 {
@@ -66,10 +68,11 @@ namespace Tests.Application.Authentication.Commands
 
             _userRoleInDepartmentRepositoryMock
                 .Setup(repo => repo.GetRolesOfUserInDepartment(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(new List<Role> { role });
+                .ReturnsAsync(new List<RoleEntity> { role });
 
+            DateTime capturedExpireDate = expireDate;
             _jwtTokenServiceMock
-                .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<List<string>>(), out expireDate))
+                .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<IEnumerable<string>>(), out capturedExpireDate, null))
                 .Returns(token);
 
             _cacheServiceMock
@@ -164,10 +167,11 @@ namespace Tests.Application.Authentication.Commands
 
             _userRoleInDepartmentRepositoryMock
                 .Setup(repo => repo.GetRolesOfUserInDepartment(It.IsAny<Guid>(), It.IsAny<Guid>()))
-                .ReturnsAsync(new List<Role> { role });
+                .ReturnsAsync(new List<RoleEntity> { role });
 
+            DateTime capturedExpireDate = expireDate;
             _jwtTokenServiceMock
-                .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<List<string>>(), out expireDate))
+                .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<IEnumerable<string>>(), out capturedExpireDate, null))
                 .Returns(token);
 
             _cacheServiceMock
@@ -243,16 +247,16 @@ namespace Tests.Application.Authentication.Commands
             return user;
         }
 
-        private Role CreateTestRole()
+        private RoleEntity CreateTestRole()
         {
             var name = EntityName.Create("Admin").Data;
-            return Role.CreateRole(name, "Administrator role").Data;
+            return RoleEntity.CreateRole(name, "Administrator role").Data;
         }
 
-        private Department CreateTestDepartment()
+        private DepartmentEntity CreateTestDepartment()
         {
             var name = EntityName.Create("IT").Data;
-            return Department.CreateDepartment(name).Data;
+            return DepartmentEntity.CreateDepartment(name).Data;
         }
     }
 }

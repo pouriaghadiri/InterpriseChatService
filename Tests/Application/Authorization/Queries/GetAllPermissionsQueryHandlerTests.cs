@@ -76,7 +76,6 @@ namespace Tests.Application.Authorization.Queries
             var entityName = EntityName.Create(name).Data;
             return new Permission
             {
-                Id = Guid.NewGuid(),
                 Name = entityName,
                 Description = $"Description for {name}"
             };

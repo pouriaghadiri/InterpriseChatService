@@ -8,6 +8,7 @@ using Moq;
 using Xunit;
 using FluentAssertions;
 using Domain.Base;
+using Application.Features.UserUseCase.DTOs;
 
 namespace Tests.UnitTest.Users.Queries
 {
@@ -34,7 +35,7 @@ namespace Tests.UnitTest.Users.Queries
             var userDto = CreateTestUserDTO();
             var cacheKey = $"user:email:{_request.Email}";
             
-            _cacheServiceMock.Setup(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(cacheKey))
+            _cacheServiceMock.Setup(x => x.GetAsync<UserDTO>(cacheKey))
                 .ReturnsAsync(userDto);
 
             // Act
@@ -47,7 +48,7 @@ namespace Tests.UnitTest.Users.Queries
             result.Data.ID.Should().Be(userDto.ID);
             
             // Verify cache was checked
-            _cacheServiceMock.Verify(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(cacheKey), Times.Once);
+            _cacheServiceMock.Verify(x => x.GetAsync<UserDTO>(cacheKey), Times.Once);
             
             // Verify repository was not called
             _userRepositoryMock.Verify(x => x.GetbyEmailAsync(It.IsAny<Email>()), Times.Never);
@@ -60,11 +61,11 @@ namespace Tests.UnitTest.Users.Queries
             var user = CreateTestUser();
             var cacheKey = $"user:email:{_request.Email}";
             
-            _cacheServiceMock.Setup(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(cacheKey))
-                .ReturnsAsync((Application.Features.UserUseCase.DTOs.UserDTO)null);
+            _cacheServiceMock.Setup(x => x.GetAsync<UserDTO>(cacheKey))
+                .ReturnsAsync((UserDTO)null);
             _userRepositoryMock.Setup(x => x.GetbyEmailAsync(It.IsAny<Email>()))
                 .ReturnsAsync(user);
-            _cacheServiceMock.Setup(x => x.SetAsync(cacheKey, It.IsAny<Application.Features.UserUseCase.DTOs.UserDTO>(), It.IsAny<TimeSpan>()))
+            _cacheServiceMock.Setup(x => x.SetAsync(cacheKey, It.IsAny<UserDTO>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -77,13 +78,13 @@ namespace Tests.UnitTest.Users.Queries
             result.Data.ID.Should().Be(user.Id);
             
             // Verify cache was checked first
-            _cacheServiceMock.Verify(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(cacheKey), Times.Once);
+            _cacheServiceMock.Verify(x => x.GetAsync<UserDTO>(cacheKey), Times.Once);
             
             // Verify repository was called
             _userRepositoryMock.Verify(x => x.GetbyEmailAsync(It.IsAny<Email>()), Times.Once);
             
             // Verify user was cached
-            _cacheServiceMock.Verify(x => x.SetAsync(cacheKey, It.IsAny<Application.Features.UserUseCase.DTOs.UserDTO>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheServiceMock.Verify(x => x.SetAsync(cacheKey, It.IsAny<UserDTO>(), It.IsAny<TimeSpan>()), Times.Once);
         }
 
         [Fact]
@@ -92,8 +93,8 @@ namespace Tests.UnitTest.Users.Queries
             // Arrange
             var cacheKey = $"user:email:{_request.Email}";
             
-            _cacheServiceMock.Setup(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(cacheKey))
-                .ReturnsAsync((Application.Features.UserUseCase.DTOs.UserDTO)null);
+            _cacheServiceMock.Setup(x => x.GetAsync<UserDTO>(cacheKey))
+                .ReturnsAsync((UserDTO)null);
             _userRepositoryMock.Setup(x => x.GetbyEmailAsync(It.IsAny<Email>()))
                 .ReturnsAsync((User)null);
 
@@ -114,19 +115,19 @@ namespace Tests.UnitTest.Users.Queries
             var user = CreateTestUser();
             var cacheKey = $"user:email:{_request.Email}";
             
-            _cacheServiceMock.Setup(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(It.IsAny<string>()))
-                .ReturnsAsync((Application.Features.UserUseCase.DTOs.UserDTO)null);
+            _cacheServiceMock.Setup(x => x.GetAsync<UserDTO>(It.IsAny<string>()))
+                .ReturnsAsync((UserDTO)null);
             _userRepositoryMock.Setup(x => x.GetbyEmailAsync(It.IsAny<Email>()))
                 .ReturnsAsync(user);
-            _cacheServiceMock.Setup(x => x.SetAsync(It.IsAny<string>(), It.IsAny<Application.Features.UserUseCase.DTOs.UserDTO>(), It.IsAny<TimeSpan>()))
+            _cacheServiceMock.Setup(x => x.SetAsync(It.IsAny<string>(), It.IsAny<UserDTO>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask);
 
             // Act
             await _handler.Handle(_request, CancellationToken.None);
 
             // Assert
-            _cacheServiceMock.Verify(x => x.GetAsync<Application.Features.UserUseCase.DTOs.UserDTO>(cacheKey), Times.Once);
-            _cacheServiceMock.Verify(x => x.SetAsync(cacheKey, It.IsAny<Application.Features.UserUseCase.DTOs.UserDTO>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheServiceMock.Verify(x => x.GetAsync<UserDTO>(cacheKey), Times.Once);
+            _cacheServiceMock.Verify(x => x.SetAsync(cacheKey, It.IsAny<UserDTO>(), It.IsAny<TimeSpan>()), Times.Once);
         }
 
         private User CreateTestUser()
@@ -138,13 +139,13 @@ namespace Tests.UnitTest.Users.Queries
             return User.RegisterUser(fullName, email, password, phone, "profile.jpg", "Developer", "Tehran").Data;
         }
 
-        private Application.Features.UserUseCase.DTOs.UserDTO CreateTestUserDTO()
+        private UserDTO CreateTestUserDTO()
         {
-            return new Application.Features.UserUseCase.DTOs.UserDTO
+            return new UserDTO
             {
                 ID = Guid.NewGuid(),
                 FullName = PersonFullName.Create("John", "Doe").Data,
-                UserRoleInDepartments = new List<Application.Features.UserUseCase.DTOs.UserRoleInDepartmentDTO>()
+                UserRoleInDepartments = new List<UserRoleInDepartmentDTO>()
             };
         }
     }

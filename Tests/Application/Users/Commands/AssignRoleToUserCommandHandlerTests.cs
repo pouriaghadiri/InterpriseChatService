@@ -7,6 +7,8 @@ using Moq;
 using Xunit;
 using FluentAssertions;
 using Domain.Base;
+using RoleEntity = Domain.Entities.Role;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.UnitTest.Users.Commands
 {
@@ -74,7 +76,7 @@ namespace Tests.UnitTest.Users.Commands
             var user = CreateTestUser();
             _userRepositoryMock.Setup(x => x.GetbyIdAsync(_request.User.Id))
                 .ReturnsAsync(user);
-            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -94,9 +96,9 @@ namespace Tests.UnitTest.Users.Commands
             var user = CreateTestUser();
             _userRepositoryMock.Setup(x => x.GetbyIdAsync(_request.User.Id))
                 .ReturnsAsync(user);
-            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -116,9 +118,9 @@ namespace Tests.UnitTest.Users.Commands
             var user = CreateTestUser();
             _userRepositoryMock.Setup(x => x.GetbyIdAsync(_request.User.Id))
                 .ReturnsAsync(user);
-            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Mock that user already has this role in this department
@@ -142,9 +144,9 @@ namespace Tests.UnitTest.Users.Commands
             var user = CreateTestUser();
             _userRepositoryMock.Setup(x => x.GetbyIdAsync(_request.User.Id))
                 .ReturnsAsync(user);
-            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _departmentRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+            _roleRepositoryMock.Setup(x => x.ExistsAsync(It.IsAny<System.Linq.Expressions.Expression<System.Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Mock that user doesn't have this role in this department
@@ -173,16 +175,16 @@ namespace Tests.UnitTest.Users.Commands
             return User.RegisterUser(fullName, email, password, phone, "profile.jpg", "Developer", "Tehran").Data;
         }
 
-        private Role CreateTestRole()
+        private RoleEntity CreateTestRole()
             {
             var name = EntityName.Create("Admin").Data;
-            return Role.CreateRole(name, "Administrator role").Data;
+            return RoleEntity.CreateRole(name, "Administrator role").Data;
         }
 
-        private Department CreateTestDepartment()
+        private DepartmentEntity CreateTestDepartment()
             {
             var name = EntityName.Create("Engineering").Data;
-            return Department.CreateDepartment(name).Data;
+            return DepartmentEntity.CreateDepartment(name).Data;
         }
     }
 }

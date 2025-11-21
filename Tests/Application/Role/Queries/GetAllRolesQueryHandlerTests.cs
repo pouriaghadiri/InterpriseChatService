@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using RoleEntity = Domain.Entities.Role;
 
 namespace Tests.Application.Role.Queries
 {
@@ -31,7 +32,7 @@ namespace Tests.Application.Role.Queries
         public async Task Handle_Should_Return_AllRoles()
         {
             // Arrange
-            var roles = new List<Role>
+            var roles = new List<RoleEntity>
             {
                 CreateTestRole("Admin"),
                 CreateTestRole("User"),
@@ -59,7 +60,7 @@ namespace Tests.Application.Role.Queries
             // Arrange
             _roleRepositoryMock
                 .Setup(repo => repo.GetAllAsync())
-                .ReturnsAsync(new List<Role>());
+                .ReturnsAsync(new List<RoleEntity>());
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -71,10 +72,10 @@ namespace Tests.Application.Role.Queries
             result.Data.Should().BeEmpty();
         }
 
-        private Role CreateTestRole(string name)
+        private RoleEntity CreateTestRole(string name)
         {
             var entityName = EntityName.Create(name).Data;
-            return Role.CreateRole(entityName, $"Description for {name}").Data;
+            return RoleEntity.CreateRole(entityName, $"Description for {name}").Data;
         }
     }
 }

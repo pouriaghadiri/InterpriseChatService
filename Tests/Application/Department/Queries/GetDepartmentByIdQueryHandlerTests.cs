@@ -9,6 +9,7 @@ using Moq;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Department.Queries
 {
@@ -22,10 +23,7 @@ namespace Tests.Application.Department.Queries
         {
             _departmentRepositoryMock = new Mock<IDepartmentRepository>();
             _handler = new GetDepartmentByIdQueryHandler(_departmentRepositoryMock.Object);
-            _request = new GetDepartmentByIdQuery
-            {
-                Id = Guid.NewGuid()
-            };
+            _request = new GetDepartmentByIdQuery(Guid.NewGuid());
         }
 
         [Fact]
@@ -33,7 +31,6 @@ namespace Tests.Application.Department.Queries
         {
             // Arrange
             var department = CreateTestDepartment();
-            department.Id = _request.Id;
 
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -56,7 +53,7 @@ namespace Tests.Application.Department.Queries
             // Arrange
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
-                .ReturnsAsync((Department?)null);
+                .ReturnsAsync((DepartmentEntity?)null);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -68,10 +65,10 @@ namespace Tests.Application.Department.Queries
             result.Message.Should().Be("Department not found.");
         }
 
-        private Department CreateTestDepartment()
+        private DepartmentEntity CreateTestDepartment()
         {
             var name = EntityName.Create("IT").Data;
-            return Department.CreateDepartment(name).Data;
+            return DepartmentEntity.CreateDepartment(name).Data;
         }
     }
 }

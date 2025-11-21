@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Department.Queries
 {
@@ -31,7 +32,7 @@ namespace Tests.Application.Department.Queries
         public async Task Handle_Should_Return_AllDepartments()
         {
             // Arrange
-            var departments = new List<Department>
+            var departments = new List<DepartmentEntity>
             {
                 CreateTestDepartment("IT"),
                 CreateTestDepartment("HR"),
@@ -59,7 +60,7 @@ namespace Tests.Application.Department.Queries
             // Arrange
             _departmentRepositoryMock
                 .Setup(repo => repo.GetAllAsync())
-                .ReturnsAsync(new List<Department>());
+                .ReturnsAsync(new List<DepartmentEntity>());
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -71,10 +72,10 @@ namespace Tests.Application.Department.Queries
             result.Data.Should().BeEmpty();
         }
 
-        private Department CreateTestDepartment(string name)
+        private DepartmentEntity CreateTestDepartment(string name)
         {
             var entityName = EntityName.Create(name).Data;
-            return Department.CreateDepartment(entityName).Data;
+            return DepartmentEntity.CreateDepartment(entityName).Data;
         }
     }
 }

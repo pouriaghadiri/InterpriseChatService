@@ -10,6 +10,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
+using RoleEntity = Domain.Entities.Role;
 
 namespace Tests.Application.Role.Commands
 {
@@ -40,18 +41,17 @@ namespace Tests.Application.Role.Commands
         {
             // Arrange
             var existingRole = CreateTestRole();
-            existingRole.Id = _request.Id;
 
             _roleRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
                 .ReturnsAsync(existingRole);
 
             _roleRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             _roleRepositoryMock
-                .Setup(repo => repo.UpdateAsync(It.IsAny<Role>()))
+                .Setup(repo => repo.UpdateAsync(It.IsAny<RoleEntity>()))
                 .Returns(Task.CompletedTask);
 
             _unitOfWorkMock
@@ -65,7 +65,7 @@ namespace Tests.Application.Role.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Be("Role updated successfully.");
-            _roleRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Role>()), Times.Once);
+            _roleRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<RoleEntity>()), Times.Once);
         }
 
         [Fact]
@@ -74,7 +74,7 @@ namespace Tests.Application.Role.Commands
             // Arrange
             _roleRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
-                .ReturnsAsync((Role?)null);
+                .ReturnsAsync((RoleEntity?)null);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -91,14 +91,13 @@ namespace Tests.Application.Role.Commands
         {
             // Arrange
             var existingRole = CreateTestRole();
-            existingRole.Id = _request.Id;
 
             _roleRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
                 .ReturnsAsync(existingRole);
 
             _roleRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -111,10 +110,10 @@ namespace Tests.Application.Role.Commands
             result.Message.Should().Contain("already exists");
         }
 
-        private Role CreateTestRole()
+        private RoleEntity CreateTestRole()
         {
             var name = EntityName.Create("Admin").Data;
-            return Role.CreateRole(name, "Administrator role").Data;
+            return RoleEntity.CreateRole(name, "Administrator role").Data;
         }
     }
 }

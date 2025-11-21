@@ -30,7 +30,6 @@ namespace Tests.Application.Authorization.Queries
         {
             // Arrange
             var permission = CreateTestPermission();
-            permission.Id = _request.Id;
 
             _permissionRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -70,7 +69,6 @@ namespace Tests.Application.Authorization.Queries
             var name = EntityName.Create("TestPermission").Data;
             return new Permission
             {
-                Id = Guid.NewGuid(),
                 Name = name,
                 Description = "Test description"
             };

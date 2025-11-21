@@ -10,6 +10,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
+using RoleEntity = Domain.Entities.Role;
 
 namespace Tests.Application.Role.Commands
 {
@@ -38,11 +39,11 @@ namespace Tests.Application.Role.Commands
         {
             // Arrange
             _roleRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             _roleRepositoryMock
-                .Setup(repo => repo.AddAsync(It.IsAny<Role>()))
+                .Setup(repo => repo.AddAsync(It.IsAny<RoleEntity>()))
                 .Returns(Task.CompletedTask);
 
             _unitOfWorkMock
@@ -56,7 +57,7 @@ namespace Tests.Application.Role.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Be("Role added successfully.");
-            _roleRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Role>()), Times.Once);
+            _roleRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<RoleEntity>()), Times.Once);
         }
 
         [Fact]
@@ -78,7 +79,7 @@ namespace Tests.Application.Role.Commands
         {
             // Arrange
             _roleRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Role, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<RoleEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act

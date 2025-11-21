@@ -10,6 +10,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Department.Commands
 {
@@ -38,18 +39,17 @@ namespace Tests.Application.Department.Commands
         {
             // Arrange
             var existingDepartment = CreateTestDepartment();
-            existingDepartment.Id = _request.Id;
 
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
                 .ReturnsAsync(existingDepartment);
 
             _departmentRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             _departmentRepositoryMock
-                .Setup(repo => repo.UpdateAsync(It.IsAny<Department>()))
+                .Setup(repo => repo.UpdateAsync(It.IsAny<DepartmentEntity>()))
                 .Returns(Task.CompletedTask);
 
             _unitOfWorkMock
@@ -63,7 +63,7 @@ namespace Tests.Application.Department.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Be("Department updated successfully.");
-            _departmentRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<Department>()), Times.Once);
+            _departmentRepositoryMock.Verify(repo => repo.UpdateAsync(It.IsAny<DepartmentEntity>()), Times.Once);
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Tests.Application.Department.Commands
             // Arrange
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
-                .ReturnsAsync((Department?)null);
+                .ReturnsAsync((DepartmentEntity?)null);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -89,14 +89,13 @@ namespace Tests.Application.Department.Commands
         {
             // Arrange
             var existingDepartment = CreateTestDepartment();
-            existingDepartment.Id = _request.Id;
 
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
                 .ReturnsAsync(existingDepartment);
 
             _departmentRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act
@@ -109,10 +108,10 @@ namespace Tests.Application.Department.Commands
             result.Message.Should().Contain("already exists");
         }
 
-        private Department CreateTestDepartment()
+        private DepartmentEntity CreateTestDepartment()
         {
             var name = EntityName.Create("IT").Data;
-            return Department.CreateDepartment(name).Data;
+            return DepartmentEntity.CreateDepartment(name).Data;
         }
     }
 }

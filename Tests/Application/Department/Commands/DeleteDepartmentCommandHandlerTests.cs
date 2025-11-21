@@ -9,6 +9,7 @@ using Moq;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Department.Commands
 {
@@ -25,10 +26,7 @@ namespace Tests.Application.Department.Commands
             _unitOfWorkMock = new Mock<IUnitOfWork>();
             _handler = new DeleteDepartmentCommandHandler(_unitOfWorkMock.Object, _departmentRepositoryMock.Object);
 
-            _request = new DeleteDepartmentCommand
-            {
-                Id = Guid.NewGuid()
-            };
+            _request = new DeleteDepartmentCommand(Guid.NewGuid());
         }
 
         [Fact]
@@ -36,7 +34,6 @@ namespace Tests.Application.Department.Commands
         {
             // Arrange
             var existingDepartment = CreateTestDepartment();
-            existingDepartment.Id = _request.Id;
 
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -47,7 +44,7 @@ namespace Tests.Application.Department.Commands
                 .ReturnsAsync(false);
 
             _departmentRepositoryMock
-                .Setup(repo => repo.DeleteAsync(It.IsAny<Department>()))
+                .Setup(repo => repo.DeleteAsync(It.IsAny<DepartmentEntity>()))
                 .Returns(Task.CompletedTask);
 
             _unitOfWorkMock
@@ -61,7 +58,7 @@ namespace Tests.Application.Department.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Be("Department deleted successfully.");
-            _departmentRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<Department>()), Times.Once);
+            _departmentRepositoryMock.Verify(repo => repo.DeleteAsync(It.IsAny<DepartmentEntity>()), Times.Once);
         }
 
         [Fact]
@@ -70,7 +67,7 @@ namespace Tests.Application.Department.Commands
             // Arrange
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
-                .ReturnsAsync((Department?)null);
+                .ReturnsAsync((DepartmentEntity?)null);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -87,7 +84,6 @@ namespace Tests.Application.Department.Commands
         {
             // Arrange
             var existingDepartment = CreateTestDepartment();
-            existingDepartment.Id = _request.Id;
 
             _departmentRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -107,10 +103,10 @@ namespace Tests.Application.Department.Commands
             result.Message.Should().Contain("has assigned users");
         }
 
-        private Department CreateTestDepartment()
+        private DepartmentEntity CreateTestDepartment()
         {
             var name = EntityName.Create("IT").Data;
-            return Department.CreateDepartment(name).Data;
+            return DepartmentEntity.CreateDepartment(name).Data;
         }
     }
 }

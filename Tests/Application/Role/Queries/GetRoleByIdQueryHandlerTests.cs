@@ -9,6 +9,7 @@ using Moq;
 using System;
 using System.Threading.Tasks;
 using Xunit;
+using RoleEntity = Domain.Entities.Role;
 
 namespace Tests.Application.Role.Queries
 {
@@ -30,7 +31,6 @@ namespace Tests.Application.Role.Queries
         {
             // Arrange
             var role = CreateTestRole();
-            role.Id = _request.Id;
 
             _roleRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -53,7 +53,7 @@ namespace Tests.Application.Role.Queries
             // Arrange
             _roleRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
-                .ReturnsAsync((Role?)null);
+                .ReturnsAsync((RoleEntity?)null);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);
@@ -65,10 +65,10 @@ namespace Tests.Application.Role.Queries
             result.Message.Should().Be("Role not found.");
         }
 
-        private Role CreateTestRole()
+        private RoleEntity CreateTestRole()
         {
             var name = EntityName.Create("Admin").Data;
-            return Role.CreateRole(name, "Administrator role").Data;
+            return RoleEntity.CreateRole(name, "Administrator role").Data;
         }
     }
 }

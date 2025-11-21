@@ -1,12 +1,14 @@
 using Application.Features.AuthorizationUseCase.Commands;
 using Domain.Base;
 using Domain.Base.Interface;
+using Domain.Entities;
 using FluentAssertions;
 using Moq;
 using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Authorization.Commands
 {
@@ -33,15 +35,15 @@ namespace Tests.Application.Authorization.Commands
         public async Task Handle_Should_AssignPermission_WhenInputIsValid()
         {
             // Arrange
-            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.User, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Permission, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Permission, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Departments.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Departments.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.UserPermissions.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.UserPermission, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.UserPermissions.ExistsAsync(It.IsAny<Expression<Func<UserPermission, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
-            _unitOfWorkMock.Setup(uow => uow.UserPermissions.AddAsync(It.IsAny<Domain.Entities.UserPermission>()))
+            _unitOfWorkMock.Setup(uow => uow.UserPermissions.AddAsync(It.IsAny<UserPermission>()))
                 .Returns(Task.CompletedTask);
             _unitOfWorkMock.Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
@@ -53,7 +55,7 @@ namespace Tests.Application.Authorization.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Contain("assigned to user successfully");
-            _unitOfWorkMock.Verify(uow => uow.UserPermissions.AddAsync(It.IsAny<Domain.Entities.UserPermission>()), Times.Once);
+            _unitOfWorkMock.Verify(uow => uow.UserPermissions.AddAsync(It.IsAny<UserPermission>()), Times.Once);
             _unitOfWorkMock.Verify(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
@@ -61,7 +63,7 @@ namespace Tests.Application.Authorization.Commands
         public async Task Handle_Should_Return_Failure_WhenUserNotFound()
         {
             // Arrange
-            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.User, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -78,9 +80,9 @@ namespace Tests.Application.Authorization.Commands
         public async Task Handle_Should_Return_Failure_WhenPermissionNotFound()
         {
             // Arrange
-            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.User, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Permission, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Permission, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -97,11 +99,11 @@ namespace Tests.Application.Authorization.Commands
         public async Task Handle_Should_Return_Failure_WhenDepartmentNotFound()
         {
             // Arrange
-            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.User, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Permission, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Permission, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Departments.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Departments.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             // Act
@@ -118,13 +120,13 @@ namespace Tests.Application.Authorization.Commands
         public async Task Handle_Should_Return_Failure_WhenPermissionAlreadyAssigned()
         {
             // Arrange
-            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.User, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Users.ExistsAsync(It.IsAny<Expression<Func<User, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Permission, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Permissions.ExistsAsync(It.IsAny<Expression<Func<Permission, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.Departments.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.Department, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.Departments.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
-            _unitOfWorkMock.Setup(uow => uow.UserPermissions.ExistsAsync(It.IsAny<Expression<Func<Domain.Entities.UserPermission, bool>>>(), It.IsAny<CancellationToken>()))
+            _unitOfWorkMock.Setup(uow => uow.UserPermissions.ExistsAsync(It.IsAny<Expression<Func<UserPermission, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act

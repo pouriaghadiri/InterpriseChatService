@@ -1,5 +1,6 @@
 using Application.Features.AuthorizationUseCase.Commands;
 using Domain.Base;
+using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
 using FluentAssertions;
@@ -29,7 +30,6 @@ namespace Tests.Application.Authorization.Commands
         {
             // Arrange
             var existingPermission = CreateTestPermission();
-            existingPermission.Id = _request.Id;
 
             _permissionRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -76,7 +76,6 @@ namespace Tests.Application.Authorization.Commands
         {
             // Arrange
             var existingPermission = CreateTestPermission();
-            existingPermission.Id = _request.Id;
 
             _permissionRepositoryMock
                 .Setup(repo => repo.GetbyIdAsync(_request.Id))
@@ -101,7 +100,6 @@ namespace Tests.Application.Authorization.Commands
             var name = EntityName.Create("TestPermission").Data;
             return new Permission
             {
-                Id = Guid.NewGuid(),
                 Name = name,
                 Description = "Test description"
             };

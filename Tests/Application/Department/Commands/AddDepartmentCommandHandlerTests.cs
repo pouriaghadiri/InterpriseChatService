@@ -10,6 +10,7 @@ using System;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Xunit;
+using DepartmentEntity = Domain.Entities.Department;
 
 namespace Tests.Application.Department.Commands
 {
@@ -37,11 +38,11 @@ namespace Tests.Application.Department.Commands
         {
             // Arrange
             _departmentRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(false);
 
             _departmentRepositoryMock
-                .Setup(repo => repo.AddAsync(It.IsAny<Department>()))
+                .Setup(repo => repo.AddAsync(It.IsAny<DepartmentEntity>()))
                 .Returns(Task.CompletedTask);
 
             _unitOfWorkMock
@@ -55,7 +56,7 @@ namespace Tests.Application.Department.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Be("Department added successfully.");
-            _departmentRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<Department>()), Times.Once);
+            _departmentRepositoryMock.Verify(repo => repo.AddAsync(It.IsAny<DepartmentEntity>()), Times.Once);
         }
 
         [Fact]
@@ -77,7 +78,7 @@ namespace Tests.Application.Department.Commands
         {
             // Arrange
             _departmentRepositoryMock
-                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<Department, bool>>>(), It.IsAny<CancellationToken>()))
+                .Setup(repo => repo.ExistsAsync(It.IsAny<Expression<Func<DepartmentEntity, bool>>>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(true);
 
             // Act

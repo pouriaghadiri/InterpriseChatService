@@ -40,7 +40,6 @@ namespace Tests.Application.Authorization.Queries
                     DepartmentId = _request.departmentId,
                     Permission = new Permission
                     {
-                        Id = Guid.NewGuid(),
                         Name = EntityName.Create("CreateUser").Data,
                         Description = "Create user permission"
                     }
