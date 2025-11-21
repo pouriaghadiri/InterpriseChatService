@@ -5,7 +5,7 @@ using MediatR;
 
 namespace Application.Features.AuthorizationUseCase.Commands
 {
-    class AssignPermissionToUserCommandHandler : IRequestHandler<AssignPermissionToUserCommand, MessageDTO>
+    public class AssignPermissionToUserCommandHandler : IRequestHandler<AssignPermissionToUserCommand, MessageDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         public AssignPermissionToUserCommandHandler(IUnitOfWork unitOfWork)

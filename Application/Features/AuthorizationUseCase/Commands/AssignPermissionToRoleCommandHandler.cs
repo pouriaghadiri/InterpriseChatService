@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace Application.Features.AuthorizationUseCase.Commands
 {
-    class AssignPermissionToRoleCommandHandler : IRequestHandler<AssignPermissionToRoleCommand, MessageDTO>
+    public class AssignPermissionToRoleCommandHandler : IRequestHandler<AssignPermissionToRoleCommand, MessageDTO>
     {
         private readonly IUnitOfWork _unitOfWork;
         public AssignPermissionToRoleCommandHandler(IUnitOfWork unitOfWork)
