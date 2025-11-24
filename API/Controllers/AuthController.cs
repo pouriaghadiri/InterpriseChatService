@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
     /// <param name="command">Password change data</param>
     /// <returns>Change result</returns>
     [HttpPut("change-password")]
-    [Authorize(Policy = "PERM_Change_Password")]
+    [Authorize]
     public async Task<ActionResult<MessageDTO>> ChangePassword([FromBody] ChangePasswordUserCommand command)
     {
         var result = await _mediator.Send(command);
@@ -75,7 +75,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <returns>Logout result</returns>
     [HttpPost("logout")]
-    [Authorize (Policy = "PERM_Logout")]
+    [Authorize]
     public async Task<ActionResult<MessageDTO>> Logout()
     {
         var result = await _mediator.Send(new LogoutCommand());
