@@ -48,8 +48,9 @@ public class AuthController : ControllerBase
     /// <param name="command">User registration data</param>
     /// <returns>Registration result</returns>
     [HttpPost("register")]
-    [AllowAnonymous]
+    //[AllowAnonymous]
     [EnableRateLimiting("AuthPolicy")]
+    [Authorize(Policy = "PERM_Register_User")]
     public async Task<ActionResult<ResultDTO<Guid>>> Register([FromBody] RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);
@@ -62,7 +63,7 @@ public class AuthController : ControllerBase
     /// <param name="command">Password change data</param>
     /// <returns>Change result</returns>
     [HttpPut("change-password")]
-    [Authorize]
+    [Authorize(Policy = "PERM_Change_Password")]
     public async Task<ActionResult<MessageDTO>> ChangePassword([FromBody] ChangePasswordUserCommand command)
     {
         var result = await _mediator.Send(command);
@@ -74,7 +75,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <returns>Logout result</returns>
     [HttpPost("logout")]
-    [Authorize]
+    [Authorize (Policy = "PERM_Logout")]
     public async Task<ActionResult<MessageDTO>> Logout()
     {
         var result = await _mediator.Send(new LogoutCommand());
@@ -155,7 +156,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <returns>User profile</returns>
     [HttpGet("profile")]
-    [Authorize]
+    [Authorize (Policy = "PERM_Review_My_Profile")]
     public async Task<ActionResult<ResultDTO<UserProfileDTO>>> GetProfile()
     {
         var result = await _mediator.Send(new GetUserProfileQuery());
@@ -168,7 +169,7 @@ public class AuthController : ControllerBase
     /// <param name="command">Profile update data</param>
     /// <returns>Update result</returns>
     [HttpPut("profile")]
-    [Authorize]
+    [Authorize (Policy = "PERM_Update_My_Profile")]
     public async Task<ActionResult<MessageDTO>> UpdateProfile([FromBody] UpdateProfileUserCommand command)
     {
         var result = await _mediator.Send(command);

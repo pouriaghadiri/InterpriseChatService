@@ -3,6 +3,7 @@ using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using MediatR;
 
 namespace Application.Features.UserUseCase.Commands
@@ -11,11 +12,13 @@ namespace Application.Features.UserUseCase.Commands
     {
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheInvalidationService _cacheInvalidationService;
 
-        public RegisterUserCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+        public RegisterUserCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository, ICacheInvalidationService cacheInvalidationService)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
+            _cacheInvalidationService = cacheInvalidationService;
         }
 
 
@@ -56,6 +59,9 @@ namespace Application.Features.UserUseCase.Commands
             // Fix: Remove the assignment to a variable since AddAsync returns void
             await _userRepository.AddAsync(newUser.Data);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Invalidate email-based cache (defensive - in case of negative cache or race conditions)
+            await _cacheInvalidationService.InvalidateUserCacheByEmailAsync(newUser.Data.Email.Value);
 
             return ResultDTO<Guid>.Success("Created", newUser.Data.Id, "User created successfully");
         }

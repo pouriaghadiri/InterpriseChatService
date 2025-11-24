@@ -1,4 +1,4 @@
-﻿using Application.Features.UserUseCase.Commands;
+﻿using Application.Features.AuthenticationUseCase.Commands;
 using FluentValidation;
 using System;
 using System.Collections.Generic;

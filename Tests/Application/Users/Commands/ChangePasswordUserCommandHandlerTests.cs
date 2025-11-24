@@ -1,4 +1,3 @@
-using Application.Features.UserUseCase.Commands;
 using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
@@ -7,6 +6,7 @@ using Moq;
 using Xunit;
 using FluentAssertions;
 using Domain.Base;
+using Application.Features.AuthenticationUseCase.Commands;
 
 namespace Tests.UnitTest.Users.Commands
 {

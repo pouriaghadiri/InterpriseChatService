@@ -3,6 +3,7 @@ using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using MediatR;
 
 namespace Application.Features.UserUseCase.Commands
@@ -11,11 +12,13 @@ namespace Application.Features.UserUseCase.Commands
     {
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheInvalidationService _cacheInvalidationService;
 
-        public UpdateProfileUserCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+        public UpdateProfileUserCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository, ICacheInvalidationService cacheInvalidationService)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
+            _cacheInvalidationService = cacheInvalidationService;
         }
 
         public async Task<MessageDTO> Handle(UpdateProfileUserCommand request, CancellationToken cancellationToken)
@@ -42,6 +45,9 @@ namespace Application.Features.UserUseCase.Commands
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Invalidate user cache (by ID and email)
+            await _cacheInvalidationService.InvalidateUserCacheAsync(user.Id, user.Email.Value);
 
             return MessageDTO.Success("Updated", "User profile Updated successfully.");
         }

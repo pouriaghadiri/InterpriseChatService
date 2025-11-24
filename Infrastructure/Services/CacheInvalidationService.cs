@@ -52,7 +52,7 @@ namespace Infrastructure.Services
             }
         }
 
-        public async Task InvalidateUserCacheAsync(Guid userId)
+        public async Task InvalidateUserCacheAsync(Guid userId, string email = null)
         {
             // Remove all user-related caches
             var cacheKeys = new List<string>
@@ -66,6 +66,12 @@ namespace Infrastructure.Services
                 $"token:*:{userId}" // Token caches
             };
 
+            // Also invalidate email-based cache if email is provided
+            if (!string.IsNullOrWhiteSpace(email))
+            {
+                cacheKeys.Add(CacheHelper.UserByEmailKey(email));
+            }
+
             foreach (var pattern in cacheKeys)
             {
                 if (pattern.Contains("*"))
@@ -77,6 +83,15 @@ namespace Infrastructure.Services
                     await _cacheService.RemoveAsync(pattern);
                 }
             }
+        }
+
+        public async Task InvalidateUserCacheByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return;
+
+            var cacheKey = CacheHelper.UserByEmailKey(email);
+            await _cacheService.RemoveAsync(cacheKey);
         }
 
         public async Task InvalidateUserDepartmentCacheAsync(Guid userId, Guid departmentId)

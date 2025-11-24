@@ -20,10 +20,17 @@ namespace Domain.Services
         Task InvalidateUserPermissionCacheAsync(Guid userId, Guid? departmentId = null);
 
         /// <summary>
-        /// Remove all user caches when user logs out
+        /// Remove all user caches when user logs out or user data is updated
         /// </summary>
         /// <param name="userId">User ID</param>
-        Task InvalidateUserCacheAsync(Guid userId);
+        /// <param name="email">User email (optional) - if provided, also invalidates email-based cache</param>
+        Task InvalidateUserCacheAsync(Guid userId, string email = null);
+
+        /// <summary>
+        /// Remove user cache by email (used when user profile is updated)
+        /// </summary>
+        /// <param name="email">User email</param>
+        Task InvalidateUserCacheByEmailAsync(string email);
 
         /// <summary>
         /// Remove all caches for a specific user and department

@@ -3,19 +3,22 @@ using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using MediatR;
 
-namespace Application.Features.UserUseCase.Commands
+namespace Application.Features.AuthenticationUseCase.Commands
 {
     public class ChangePasswordUserCommandHandler : IRequestHandler<ChangePasswordUserCommand, MessageDTO>
     {
         private readonly IUserRepository _userRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheInvalidationService _cacheInvalidationService;
 
-        public ChangePasswordUserCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository)
+        public ChangePasswordUserCommandHandler(IUnitOfWork unitOfWork, IUserRepository userRepository, ICacheInvalidationService cacheInvalidationService)
         {
             _userRepository = userRepository;
             _unitOfWork = unitOfWork;
+            _cacheInvalidationService = cacheInvalidationService;
         }
 
         public async Task<MessageDTO> Handle(ChangePasswordUserCommand request, CancellationToken cancellationToken)
@@ -33,6 +36,9 @@ namespace Application.Features.UserUseCase.Commands
             user.HashedPassword = HashedPassword.CreateFromPlain(request.NewPassword);
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Invalidate user cache (password change might affect token validation)
+            await _cacheInvalidationService.InvalidateUserCacheAsync(user.Id, user.Email.Value);
 
             return MessageDTO.Success("Updated", "Password changed successfully.");
         }

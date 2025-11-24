@@ -2,6 +2,7 @@
 using Domain.Base.Interface;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using MediatR;
 using System;
 using System.Collections.Generic;
@@ -19,9 +20,12 @@ namespace Application.Features.UserUseCase.Commands
         private readonly IUserRoleRepository _userRoleRepository;
         private readonly IUserRoleInDepartmentRepository _userRoleInDepartmentRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly ICacheInvalidationService _cacheInvalidationService;
+
         public AssignRoleToUserCommandHandler(IRoleRepository roleRepository, IUserRepository userRepository,
                                               IDepartmentRepository departmentRepository, IUnitOfWork unitOfWork,
-                                              IUserRoleRepository userRoleRepository, IUserRoleInDepartmentRepository userRoleInDepartmentRepository)
+                                              IUserRoleRepository userRoleRepository, IUserRoleInDepartmentRepository userRoleInDepartmentRepository,
+                                              ICacheInvalidationService cacheInvalidationService)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;
@@ -29,6 +33,7 @@ namespace Application.Features.UserUseCase.Commands
             _userRoleRepository = userRoleRepository;
             _unitOfWork = unitOfWork;
             _userRoleInDepartmentRepository = userRoleInDepartmentRepository;
+            _cacheInvalidationService = cacheInvalidationService;
         }
 
 
@@ -66,6 +71,10 @@ namespace Application.Features.UserUseCase.Commands
             }
 
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Invalidate user cache and user department cache (role assignment affects permissions)
+            await _cacheInvalidationService.InvalidateUserCacheAsync(existUser.Id, existUser.Email.Value);
+            await _cacheInvalidationService.InvalidateUserDepartmentCacheAsync(existUser.Id, request.Department.Id);
 
             return MessageDTO.Success("Created", "Assigned role to user successfully complleted.");
 

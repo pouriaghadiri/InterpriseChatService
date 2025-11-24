@@ -112,11 +112,16 @@ namespace Application.Features.AuthorizationUseCase.Commands
             // Invalidate cache for both old and new combinations
             await _cacheInvalidationService.InvalidateUserPermissionCacheAsync(oldUserId, oldDepartmentId);
             await _cacheInvalidationService.InvalidateUserDepartmentCacheAsync(oldUserId, oldDepartmentId);
+            await _cacheInvalidationService.InvalidateDepartmentPermissionCacheAsync(oldDepartmentId);
             
             if (newUserId != oldUserId || newDepartmentId != oldDepartmentId)
             {
                 await _cacheInvalidationService.InvalidateUserPermissionCacheAsync(newUserId, newDepartmentId);
                 await _cacheInvalidationService.InvalidateUserDepartmentCacheAsync(newUserId, newDepartmentId);
+            }
+            if (newDepartmentId != oldDepartmentId)
+            {
+                await _cacheInvalidationService.InvalidateDepartmentPermissionCacheAsync(newDepartmentId);
             }
             
             return MessageDTO.Success("Updated", "User permission updated successfully");

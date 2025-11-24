@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Application.Features.UserUseCase.Commands
+namespace Application.Features.AuthenticationUseCase.Commands
 {
     public class ChangePasswordUserCommand : IRequest<MessageDTO>
     {
