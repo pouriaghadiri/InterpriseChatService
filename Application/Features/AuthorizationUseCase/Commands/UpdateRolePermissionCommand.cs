@@ -10,9 +10,9 @@ namespace Application.Features.AuthorizationUseCase.Commands
 {
     public class UpdateRolePermissionCommand : IRequest<MessageDTO>
     {
-        public Guid RoleId { get; set; }
-        public Guid DepartmentId { get; set; }
-        public Guid PermissionId { get; set; }
-        // Add other properties as needed
+        public Guid Id { get; set; } // Id of the RolePermission record to update
+        public Guid? RoleId { get; set; } // Optional: New RoleId to assign
+        public Guid? DepartmentId { get; set; } // Optional: New DepartmentId to assign
+        public Guid? PermissionId { get; set; } // Optional: New PermissionId to assign
     }
 }
