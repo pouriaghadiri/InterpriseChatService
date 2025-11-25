@@ -36,10 +36,34 @@ namespace Persistence.Repositories
 
         public async Task<List<Role>> GetRolesOfUserInDepartment(Guid userId, Guid departmentId)
         {
-            return await _context.UserRoleInDepartments.Where(x => x.UserRole.UserId == userId &&
-                                                                   x.DepartmentId == departmentId)
-                                                        .Select(s => s.UserRole.Role)
-                                                        .ToListAsync();
+            return await _context.UserRoleInDepartments
+                .Include(urid => urid.UserRole)
+                    .ThenInclude(ur => ur.Role)
+                .Where(x => x.UserRole.UserId == userId && x.DepartmentId == departmentId)
+                .Select(s => s.UserRole.Role)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<List<Role>> GetAllRolesOfUser(Guid userId)
+        {
+            return await _context.UserRoleInDepartments
+                .Include(urid => urid.UserRole)
+                    .ThenInclude(ur => ur.Role)
+                .Where(x => x.UserRole.UserId == userId)
+                .Select(s => s.UserRole.Role)
+                .Distinct()
+                .ToListAsync();
+        }
+
+        public async Task<List<Department>> GetAllDepartmentsOfUser(Guid userId)
+        {
+            return await _context.UserRoleInDepartments
+                .Include(urid => urid.Department)
+                .Where(x => x.UserRole.UserId == userId)
+                .Select(s => s.Department)
+                .Distinct()
+                .ToListAsync();
         }
     }
 }

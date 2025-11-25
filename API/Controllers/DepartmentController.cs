@@ -42,7 +42,7 @@ public class DepartmentController : ControllerBase
     /// <param name="id">Department ID</param>
     /// <returns>Department information</returns>
     [HttpGet("{id}")]
-    [Authorize(Policy = "PERM_Department_View_All")]
+    [Authorize(Policy = "PERM_Department_View_Admin")]
     public async Task<IActionResult> GetDepartmentById(Guid id)
     {
         if (id == Guid.Empty)
@@ -57,7 +57,19 @@ public class DepartmentController : ControllerBase
     }
 
     /// <summary>
-    /// Get all departments
+    /// Get current user's departments (from JWT token)
+    /// </summary>
+    /// <returns>List of current user's departments</returns>
+    [HttpGet("my")]
+    [Authorize(Policy = "PERM_Department_View_My")]
+    public async Task<IActionResult> GetMyDepartments()
+    {
+        var result = await _mediator.Send(new GetMyDepartmentsQuery());
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get all departments (Admin only)
     /// </summary>
     /// <returns>List of all departments</returns>
     [HttpGet("all")]

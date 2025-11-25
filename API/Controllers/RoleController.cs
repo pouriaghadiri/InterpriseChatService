@@ -11,6 +11,7 @@ namespace InterpriseChatService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting("ApiPolicy")]
+[Authorize]
 public class RoleController : ControllerBase
 {
     private readonly ILogger<RoleController> _logger;
@@ -56,7 +57,19 @@ public class RoleController : ControllerBase
     }
 
     /// <summary>
-    /// Get all roles
+    /// Get current user's roles (from JWT token)
+    /// </summary>
+    /// <returns>List of current user's roles</returns>
+    [HttpGet("my")]
+    [Authorize(Policy = "PERM_Role_View_My")]
+    public async Task<IActionResult> GetMyRoles()
+    {
+        var result = await _mediator.Send(new GetMyRolesQuery());
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Get all roles (Admin only)
     /// </summary>
     /// <returns>List of all roles</returns>
     [HttpGet("all")]
