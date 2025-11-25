@@ -29,6 +29,7 @@ public class DepartmentController : ControllerBase
     /// <param name="command">Department creation command</param>
     /// <returns>Creation result</returns>
     [HttpPost("create")]
+    [Authorize(Policy = "PERM_Department_Create_Admin")]
     public async Task<MessageDTO> CreateDepartment([FromBody] AddDepartmentCommand command)
     {
         var result = await _mediator.Send(command);
@@ -41,6 +42,7 @@ public class DepartmentController : ControllerBase
     /// <param name="id">Department ID</param>
     /// <returns>Department information</returns>
     [HttpGet("{id}")]
+    [Authorize(Policy = "PERM_Department_View_All")]
     public async Task<IActionResult> GetDepartmentById(Guid id)
     {
         if (id == Guid.Empty)
@@ -58,8 +60,8 @@ public class DepartmentController : ControllerBase
     /// Get all departments
     /// </summary>
     /// <returns>List of all departments</returns>
-    [Authorize(Policy = "PERM_Department_All_View")]
     [HttpGet("all")]
+    [Authorize(Policy = "PERM_Department_View_Admin")]
     public async Task<IActionResult> GetAllDepartments()
     {
         var result = await _mediator.Send(new GetAllDepartmentsQuery());
@@ -72,6 +74,7 @@ public class DepartmentController : ControllerBase
     /// <param name="command">Department update command</param>
     /// <returns>Update result</returns>
     [HttpPut("update")]
+    [Authorize(Policy = "PERM_Department_Update_Admin")]
     public async Task<ActionResult<MessageDTO>> UpdateDepartment([FromBody] UpdateDepartmentCommand command)
     {
         var result = await _mediator.Send(command);
@@ -84,6 +87,7 @@ public class DepartmentController : ControllerBase
     /// <param name="id">Department ID to delete</param>
     /// <returns>Deletion result</returns>
     [HttpDelete("{id}")]
+    [Authorize(Policy = "PERM_Department_Delete_Admin")]
     public async Task<ActionResult<MessageDTO>> DeleteDepartment(Guid id)
     {
         if (id == Guid.Empty)

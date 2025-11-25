@@ -50,7 +50,7 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     //[AllowAnonymous]
     [EnableRateLimiting("AuthPolicy")]
-    [Authorize(Policy = "PERM_Register_User")]
+    [Authorize(Policy = "PERM_User_Create_Admin")]
     public async Task<ActionResult<ResultDTO<Guid>>> Register([FromBody] RegisterUserCommand command)
     {
         var result = await _mediator.Send(command);
@@ -63,7 +63,7 @@ public class AuthController : ControllerBase
     /// <param name="command">Password change data</param>
     /// <returns>Change result</returns>
     [HttpPut("change-password")]
-    [Authorize]
+    [Authorize(Policy = "PERM_Password_Change_My")]
     public async Task<ActionResult<MessageDTO>> ChangePassword([FromBody] ChangePasswordUserCommand command)
     {
         var result = await _mediator.Send(command);
@@ -156,7 +156,7 @@ public class AuthController : ControllerBase
     /// </summary>
     /// <returns>User profile</returns>
     [HttpGet("profile")]
-    [Authorize (Policy = "PERM_Review_My_Profile")]
+    [Authorize(Policy = "PERM_Profile_View_My")]
     public async Task<ActionResult<ResultDTO<UserProfileDTO>>> GetProfile()
     {
         var result = await _mediator.Send(new GetUserProfileQuery());
@@ -169,7 +169,7 @@ public class AuthController : ControllerBase
     /// <param name="command">Profile update data</param>
     /// <returns>Update result</returns>
     [HttpPut("profile")]
-    [Authorize (Policy = "PERM_Update_My_Profile")]
+    [Authorize(Policy = "PERM_Profile_Update_My")]
     public async Task<ActionResult<MessageDTO>> UpdateProfile([FromBody] UpdateProfileUserCommand command)
     {
         var result = await _mediator.Send(command);

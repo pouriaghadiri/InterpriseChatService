@@ -1,11 +1,11 @@
-﻿using Application.Features.AuthorizationUseCase.Requirement;
+﻿using Application.Common;
+using Application.Features.AuthorizationUseCase.Requirement;
 using Application.Features.AuthorizationUseCase.Services;
 using Domain.Services;
 using Microsoft.AspNetCore.Authorization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -26,10 +26,7 @@ namespace Application.Features.AuthorizationUseCase.Handlers
             AuthorizationHandlerContext context,
             PermissionRequirement requirement)
         {
-            var userIdString = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!Guid.TryParse(userIdString, out var userId))
-                throw new UnauthorizedAccessException("Invalid user id in token.");
+            var userId = context.User.GetUserIdOrThrow();
             
             // Get active department from Redis cache (with database fallback)
             var activeDepartmentId = await _activeDepartmentService.GetActiveDepartmentIdAsync(userId);

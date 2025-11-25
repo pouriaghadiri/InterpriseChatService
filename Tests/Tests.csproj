@@ -28,8 +28,4 @@
     <ProjectReference Include="..\API\API.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Application\Ping\" />
-  </ItemGroup>
-
 </Project>

@@ -25,6 +25,7 @@ public class UserController : ControllerBase
     }
      
     [HttpPut("update-profile")]
+    [Authorize(Policy = "PERM_Profile_Update_My")]
     public async Task<ActionResult<MessageDTO>> UpdateProfile([FromBody] UpdateProfileUserCommand command)
     {
         var result = await _mediator.Send(command);
@@ -37,6 +38,7 @@ public class UserController : ControllerBase
     /// <param name="email">User email address</param>
     /// <returns>User info</returns>
     [HttpGet("by-email")]
+    [Authorize(Policy = "PERM_User_View_All")]
     public async Task<IActionResult> GetUserByEmail([FromQuery] string email)
     {
         if (string.IsNullOrWhiteSpace(email))

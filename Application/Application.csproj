@@ -11,10 +11,6 @@
     <Folder Include="Features\DepartmentUseCase\DTOs\" />
     <Folder Include="Features\DepartmentUseCase\Queries\" />
     <Folder Include="Features\DepartmentUseCase\Validators\" />
-    <Folder Include="Features\PingUseCase\Commands\" />
-    <Folder Include="Features\PingUseCase\DTOs\" />
-    <Folder Include="Features\PingUseCase\Queries\" />
-    <Folder Include="Features\PingUseCase\Validators\" />
     <Folder Include="Features\RoleUseCase\DTOs\" />
     <Folder Include="Features\RoleUseCase\Queries\" />
     <Folder Include="Features\RoleUseCase\Validators\" />

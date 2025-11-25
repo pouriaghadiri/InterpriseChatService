@@ -11,7 +11,6 @@ namespace InterpriseChatService.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [EnableRateLimiting("ApiPolicy")]
-//[Authorize]
 public class RoleController : ControllerBase
 {
     private readonly ILogger<RoleController> _logger;
@@ -29,6 +28,7 @@ public class RoleController : ControllerBase
     /// <param name="command">Role creation command</param>
     /// <returns>Creation result</returns>
     [HttpPost("create")]
+    [Authorize(Policy = "PERM_Role_Create_Admin")]
     public async Task<ActionResult<MessageDTO>> CreateRole([FromBody] AddRoleCommand command)
     {
         var result = await _mediator.Send(command);
@@ -41,6 +41,7 @@ public class RoleController : ControllerBase
     /// <param name="id">Role ID</param>
     /// <returns>Role information</returns>
     [HttpGet("{id}")]
+    [Authorize(Policy = "PERM_Role_View_Admin")]
     public async Task<IActionResult> GetRoleById(Guid id)
     {
         if (id == Guid.Empty)
@@ -59,6 +60,7 @@ public class RoleController : ControllerBase
     /// </summary>
     /// <returns>List of all roles</returns>
     [HttpGet("all")]
+    [Authorize(Policy = "PERM_Role_View_Admin")]
     public async Task<IActionResult> GetAllRoles()
     {
         var result = await _mediator.Send(new GetAllRolesQuery());
@@ -71,6 +73,7 @@ public class RoleController : ControllerBase
     /// <param name="command">Role update command</param>
     /// <returns>Update result</returns>
     [HttpPut("update")]
+    [Authorize(Policy = "PERM_Role_Update_Admin")]
     public async Task<ActionResult<MessageDTO>> UpdateRole([FromBody] UpdateRoleCommand command)
     {
         var result = await _mediator.Send(command);
@@ -83,6 +86,7 @@ public class RoleController : ControllerBase
     /// <param name="id">Role ID to delete</param>
     /// <returns>Deletion result</returns>
     [HttpDelete("{id}")]
+    [Authorize(Policy = "PERM_Role_Delete_Admin")]
     public async Task<ActionResult<MessageDTO>> DeleteRole(Guid id)
     {
         if (id == Guid.Empty)

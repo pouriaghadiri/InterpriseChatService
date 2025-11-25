@@ -1,9 +1,9 @@
+using Application.Common;
 using Domain.Base;
 using Domain.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Security.Claims;
 
 namespace Application.Features.AuthenticationUseCase.Commands
 {
@@ -23,7 +23,7 @@ namespace Application.Features.AuthenticationUseCase.Commands
             try
             {
                 // Get user ID from JWT token claims
-                var userId = GetUserIdFromToken();
+                var userId = _httpContextAccessor.HttpContext?.User?.GetUserId();
                 
                 if (userId == null)
                 {
@@ -40,35 +40,6 @@ namespace Application.Features.AuthenticationUseCase.Commands
             {
                 // Log the exception but don't expose internal details
                 return MessageDTO.Failure("Error", null, "An error occurred during logout");
-            }
-        }
-
-        private Guid? GetUserIdFromToken()
-        {
-            try
-            {
-                var httpContext = _httpContextAccessor.HttpContext;
-                if (httpContext?.User?.Identity?.IsAuthenticated != true)
-                {
-                    return null;
-                }
-
-                var userIdClaim = httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-                if (string.IsNullOrEmpty(userIdClaim))
-                {
-                    return null;
-                }
-
-                if (Guid.TryParse(userIdClaim, out var userId))
-                {
-                    return userId;
-                }
-
-                return null;
-            }
-            catch
-            {
-                return null;
             }
         }
     }

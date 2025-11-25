@@ -14,10 +14,10 @@ namespace Application.Features.AuthorizationUseCase.Queries
         }
         public async Task<ResultDTO<List<PermissionDTO>>> Handle(GetRolePermissionsQuery request, CancellationToken cancellationToken)
         {
-            var roleExist = await _unitOfWork.Users.ExistsAsync(x => x.Id == request.roleId, cancellationToken);
+            var roleExist = await _unitOfWork.Roles.ExistsAsync(x => x.Id == request.roleId, cancellationToken);
             if (!roleExist)
             {
-                return ResultDTO<List<PermissionDTO>>.Failure("Not Exist Error", new List<string> { "The selected role doesn't have exist!" }, "Please select a valid role.");
+                return ResultDTO<List<PermissionDTO>>.Failure("Not Exist Error", new List<string> { "The selected role doesn't exist!" }, "Please select a valid role.");
             }
             var rolePermissions = await _unitOfWork.RolePermissions.GetRolePermissionsAsync(request.roleId, request.departmentId, cancellationToken);
             if (rolePermissions == null || !rolePermissions.Any())
@@ -31,7 +31,7 @@ namespace Application.Features.AuthorizationUseCase.Queries
                 Name = p.Name.Value,
                 Description = p.Description
             }).ToList();
-            return ResultDTO<List<PermissionDTO>>.Success("Permissions Retrieved", permissionDTOs, "User permissions retrieved successfully.");
+            return ResultDTO<List<PermissionDTO>>.Success("Permissions Retrieved", permissionDTOs, "Role permissions retrieved successfully.");
         }
     }
 }
