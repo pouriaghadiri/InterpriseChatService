@@ -10,5 +10,7 @@ namespace Domain.Repositories
         Task AddAsync(User user);
         Task<User?> GetbyEmailAsync(Email email);
         Task<User?> GetbyIdAsync(Guid id);
+        Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default);
+        Task DeleteAsync(User user);
     }
 }

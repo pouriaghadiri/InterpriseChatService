@@ -48,6 +48,23 @@ namespace Persistence.Repositories
                     .ThenInclude(ur => ur.UserRoleInDepartments)
                         .ThenInclude(urid => urid.Department)
                 .FirstOrDefaultAsync(x => x.Id == id);
-        } 
+        }
+
+        public async Task<List<User>> GetAllAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Users
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.Role)
+                .Include(u => u.UserRoles)
+                    .ThenInclude(ur => ur.UserRoleInDepartments)
+                        .ThenInclude(urid => urid.Department)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task DeleteAsync(User user)
+        {
+            _context.Users.Remove(user);
+            await Task.CompletedTask;
+        }
     }
 }
