@@ -3,6 +3,7 @@ using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using Moq;
 using Xunit;
 using FluentAssertions;
@@ -20,6 +21,7 @@ namespace Tests.UnitTest.Users.Commands
         private readonly Mock<IUserRoleRepository> _userRoleRepositoryMock;
         private readonly Mock<IUserRoleInDepartmentRepository> _userRoleInDepartmentRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
         private readonly AssignRoleToUserCommandHandler _handler;
         private readonly AssignRoleToUserCommand _request;
 
@@ -31,6 +33,7 @@ namespace Tests.UnitTest.Users.Commands
             _userRoleRepositoryMock = new Mock<IUserRoleRepository>();
             _userRoleInDepartmentRepositoryMock = new Mock<IUserRoleInDepartmentRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
             
             _handler = new AssignRoleToUserCommandHandler(
                 _roleRepositoryMock.Object,
@@ -38,7 +41,8 @@ namespace Tests.UnitTest.Users.Commands
                 _departmentRepositoryMock.Object,
                 _unitOfWorkMock.Object,
                 _userRoleRepositoryMock.Object,
-                _userRoleInDepartmentRepositoryMock.Object);
+                _userRoleInDepartmentRepositoryMock.Object,
+                _cacheInvalidationServiceMock.Object);
 
             var user = CreateTestUser();
             var role = CreateTestRole();

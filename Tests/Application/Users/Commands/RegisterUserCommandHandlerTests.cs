@@ -3,6 +3,7 @@ using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
+using Domain.Services;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace Tests.UnitTest.Users.Commands
     {
         private readonly Mock<IUserRepository> _userRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
         private readonly RegisterUserCommandHandler _handler;
         private readonly RegisterUserCommand _request;
 
@@ -27,8 +29,9 @@ namespace Tests.UnitTest.Users.Commands
         {
             _userRepositoryMock = new Mock<IUserRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
 
-            _handler = new RegisterUserCommandHandler(_unitOfWorkMock.Object, _userRepositoryMock.Object);
+            _handler = new RegisterUserCommandHandler(_unitOfWorkMock.Object, _userRepositoryMock.Object, _cacheInvalidationServiceMock.Object);
 
             _request = new RegisterUserCommand
             {

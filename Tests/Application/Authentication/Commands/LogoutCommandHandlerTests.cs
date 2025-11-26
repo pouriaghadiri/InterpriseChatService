@@ -42,7 +42,7 @@ namespace Tests.Application.Authentication.Commands
                 .Returns(httpContext);
 
             _cacheInvalidationServiceMock
-                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>()))
+                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
             // Act
@@ -53,7 +53,7 @@ namespace Tests.Application.Authentication.Commands
             result.IsSuccess.Should().BeTrue();
             result.Message.Should().Be("Logged out successfully");
             _cacheInvalidationServiceMock.Verify(
-                service => service.InvalidateUserCacheAsync(userId),
+                service => service.InvalidateUserCacheAsync(userId, It.IsAny<string>()),
                 Times.Once);
         }
 
@@ -77,7 +77,7 @@ namespace Tests.Application.Authentication.Commands
             result.Title.Should().Be("Unauthorized");
             result.Message.Should().Be("User not found in token");
             _cacheInvalidationServiceMock.Verify(
-                service => service.InvalidateUserCacheAsync(It.IsAny<Guid>()),
+                service => service.InvalidateUserCacheAsync(It.IsAny<Guid>(), It.IsAny<string>()),
                 Times.Never);
         }
 

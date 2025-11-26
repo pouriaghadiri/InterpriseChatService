@@ -1,4 +1,4 @@
-using Application.Features.UserUseCase.Commands;
+using Application.Features.AuthenticationUseCase.Commands;
 using Application.Features.UserUseCase.Validators;
 using FluentAssertions;
 using Xunit;

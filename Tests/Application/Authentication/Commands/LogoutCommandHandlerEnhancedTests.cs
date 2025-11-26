@@ -47,7 +47,7 @@ namespace Tests.Application.Authentication.Commands
                 .Returns(httpContext);
 
             _cacheInvalidationServiceMock
-                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>()))
+                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
             _cacheServiceMock
@@ -67,7 +67,7 @@ namespace Tests.Application.Authentication.Commands
             result.Message.Should().Be("Logged out successfully");
 
             _cacheInvalidationServiceMock.Verify(
-                service => service.InvalidateUserCacheAsync(userId),
+                service => service.InvalidateUserCacheAsync(userId, It.IsAny<string>()),
                 Times.Once);
 
             _cacheServiceMock.Verify(
@@ -90,7 +90,7 @@ namespace Tests.Application.Authentication.Commands
                 .Returns(httpContext);
 
             _cacheInvalidationServiceMock
-                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>()))
+                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
             _cacheServiceMock
@@ -104,7 +104,7 @@ namespace Tests.Application.Authentication.Commands
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             _cacheInvalidationServiceMock.Verify(
-                service => service.InvalidateUserCacheAsync(userId),
+                service => service.InvalidateUserCacheAsync(userId, It.IsAny<string>()),
                 Times.Once);
         }
 
@@ -120,7 +120,7 @@ namespace Tests.Application.Authentication.Commands
                 .Returns(httpContext);
 
             _cacheInvalidationServiceMock
-                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>()))
+                .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
             _cacheServiceMock
