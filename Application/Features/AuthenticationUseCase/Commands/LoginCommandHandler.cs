@@ -21,16 +21,21 @@ namespace Application.Features.AuthenticationUseCase.Commands
         private readonly ICacheService _cacheService;
         private readonly IActiveDepartmentService _activeDepartmentService;
         private readonly IUserRoleInDepartmentRepository _userRoleInDepartmentRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public LoginCommandHandler(IUserRepository userRepository, IJwtTokenService jwtTokenService,
                                    ICacheService cacheService, IActiveDepartmentService activeDepartmentService,
-                                   IUserRoleInDepartmentRepository userRoleInDepartmentRepository)
+                                   IUserRoleInDepartmentRepository userRoleInDepartmentRepository,
+                                   IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _jwtTokenService = jwtTokenService;
             _cacheService = cacheService;
             _activeDepartmentService = activeDepartmentService;
             _userRoleInDepartmentRepository = userRoleInDepartmentRepository;
+            _refreshTokenRepository = refreshTokenRepository;
+            _unitOfWork = unitOfWork;
         }
         public async Task<ResultDTO<TokenResultDTO>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -101,13 +106,35 @@ namespace Application.Features.AuthenticationUseCase.Commands
             // Generate token with roles based on the default department
             var token = _jwtTokenService.GenerateToken(user, roles, out DateTime expireDate);
 
+            // Generate refresh token
+            var refreshToken = _jwtTokenService.GenerateRefreshToken(user, out DateTime refreshTokenExpireDate);
+
+            // Store refresh token in database (hybrid approach)
+            var refreshTokenEntity = RefreshToken.Create(user.Id, refreshToken, refreshTokenExpireDate);
+            await _refreshTokenRepository.AddAsync(refreshTokenEntity);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             var tokenResponse = new TokenResultDTO
             {
                 Token = token,
+                RefreshToken = refreshToken,
                 ExpireTime = expireDate
             };
 
-            await _cacheService.SetAsync<TokenResultDTO>($"UserEmail:{request.Email}", tokenResponse, expireDate.TimeOfDay - DateTime.Now.TimeOfDay);
+            // Store access token in cache (short-lived, for quick lookup)
+            var accessTokenCacheKey = $"AccessToken:{request.Email}";
+            await _cacheService.SetAsync<TokenResultDTO>(accessTokenCacheKey, tokenResponse, expireDate - DateTime.Now);
+
+            // Store refresh token in cache (long-lived, for quick validation)
+            var refreshTokenCacheKey = $"RefreshToken:{refreshToken}";
+            var refreshTokenCacheData = new { 
+                UserId = user.Id, 
+                Email = request.Email,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = refreshTokenExpireDate
+            };
+            await _cacheService.SetAsync(refreshTokenCacheKey, refreshTokenCacheData, refreshTokenExpireDate - DateTime.Now);
+
             return ResultDTO<TokenResultDTO>.Success("OK", tokenResponse, "Logged in");
 
 

@@ -1,5 +1,7 @@
 using Application.Common;
 using Domain.Base;
+using Domain.Base.Interface;
+using Domain.Repositories;
 using Domain.Services;
 using MediatR;
 using Microsoft.AspNetCore.Http;
@@ -11,11 +13,22 @@ namespace Application.Features.AuthenticationUseCase.Commands
     {
         private readonly ICacheInvalidationService _cacheInvalidationService;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly ICacheService _cacheService;
+        private readonly IUnitOfWork _unitOfWork;
 
-        public LogoutCommandHandler(ICacheInvalidationService cacheInvalidationService, IHttpContextAccessor httpContextAccessor)
+        public LogoutCommandHandler(
+            ICacheInvalidationService cacheInvalidationService, 
+            IHttpContextAccessor httpContextAccessor,
+            IRefreshTokenRepository refreshTokenRepository,
+            ICacheService cacheService,
+            IUnitOfWork unitOfWork)
         {
             _cacheInvalidationService = cacheInvalidationService;
             _httpContextAccessor = httpContextAccessor;
+            _refreshTokenRepository = refreshTokenRepository;
+            _cacheService = cacheService;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<MessageDTO> Handle(LogoutCommand request, CancellationToken cancellationToken)
@@ -30,9 +43,26 @@ namespace Application.Features.AuthenticationUseCase.Commands
                     return MessageDTO.Failure("Unauthorized", null, "User not found in token");
                 }
 
+                // Revoke all active refresh tokens for the user (hybrid approach)
+                var activeTokens = await _refreshTokenRepository.GetActiveTokensByUserIdAsync(userId.Value);
+                foreach (var token in activeTokens)
+                {
+                    token.Revoke();
+                    await _refreshTokenRepository.UpdateAsync(token);
+                    
+                    // Remove from cache
+                    var cacheKey = $"RefreshToken:{token.Token}";
+                    await _cacheService.RemoveAsync(cacheKey);
+                    
+                    // Add to blacklist
+                    var blacklistKey = $"blacklist:{token.Token}";
+                    await _cacheService.SetAsync(blacklistKey, new { Blacklisted = true, Timestamp = DateTime.UtcNow }, TimeSpan.FromDays(7));
+                }
+                
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
                 // Invalidate all user caches
                 await _cacheInvalidationService.InvalidateUserCacheAsync(userId.Value);
-                 
 
                 return MessageDTO.Success("Success", "Logged out successfully");
             }

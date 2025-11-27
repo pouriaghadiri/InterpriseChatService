@@ -11,6 +11,7 @@ namespace Application.Features.AuthenticationUseCase.Services
     public interface IJwtTokenService
     {
         string GenerateToken(User user, IEnumerable<string> roles, out DateTime expDate, IEnumerable<string> permissions = null);
+        string GenerateRefreshToken(User user, out DateTime expireDate);
         ClaimsPrincipal? ValidateToken(string token, bool validateExpiration = true);
         Guid? GetUserIdFromToken(string token);
         bool IsTokenExpired(string token);

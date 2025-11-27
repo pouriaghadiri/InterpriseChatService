@@ -19,19 +19,25 @@ namespace Application.Features.AuthenticationUseCase.Commands
         private readonly ICacheService _cacheService;
         private readonly IActiveDepartmentService _activeDepartmentService;
         private readonly IUserRoleInDepartmentRepository _userRoleInDepartmentRepository;
+        private readonly IRefreshTokenRepository _refreshTokenRepository;
+        private readonly IUnitOfWork _unitOfWork;
 
         public RefreshTokenCommandHandler(
             IUserRepository userRepository, 
             IJwtTokenService jwtTokenService,
             ICacheService cacheService,
             IActiveDepartmentService activeDepartmentService,
-            IUserRoleInDepartmentRepository userRoleInDepartmentRepository)
+            IUserRoleInDepartmentRepository userRoleInDepartmentRepository,
+            IRefreshTokenRepository refreshTokenRepository,
+            IUnitOfWork unitOfWork)
         {
             _userRepository = userRepository;
             _jwtTokenService = jwtTokenService;
             _cacheService = cacheService;
             _activeDepartmentService = activeDepartmentService;
             _userRoleInDepartmentRepository = userRoleInDepartmentRepository;
+            _refreshTokenRepository = refreshTokenRepository;
+            _unitOfWork = unitOfWork;
         }
 
         public async Task<ResultDTO<TokenResultDTO>> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
@@ -42,14 +48,47 @@ namespace Application.Features.AuthenticationUseCase.Commands
                 return ResultDTO<TokenResultDTO>.Failure("Invalid", null, "Refresh token is required");
             }
 
+            // Hybrid approach: Check cache first (fast path)
+            var refreshTokenCacheKey = $"RefreshToken:{request.RefreshToken}";
+            var cachedToken = await _cacheService.GetAsync<object>(refreshTokenCacheKey);
+
+            RefreshToken? refreshTokenEntity = null;
+            
+            if (cachedToken != null)
+            {
+                // Token found in cache, now validate in database
+                refreshTokenEntity = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken);
+            }
+            else
+            {
+                // Not in cache, check database (slower but persistent)
+                refreshTokenEntity = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken);
+            }
+
+            // Validate token exists and is active
+            if (refreshTokenEntity == null)
+            {
+                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Refresh token not found");
+            }
+
+            if (refreshTokenEntity.IsRevoked)
+            {
+                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Refresh token has been revoked");
+            }
+
+            if (refreshTokenEntity.IsExpired)
+            {
+                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Refresh token has expired");
+            }
+
             // Validate the token structure and signature (but allow expired tokens for refresh)
             var principal = _jwtTokenService.ValidateToken(request.RefreshToken, validateExpiration: false);
             if (principal == null)
             {
-                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Invalid refresh token");
+                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Invalid refresh token signature");
             }
 
-            // Check if token is blacklisted
+            // Check if token is blacklisted in cache (additional security layer)
             var blacklistKey = $"blacklist:{request.RefreshToken}";
             var isBlacklisted = await _cacheService.ExistsAsync(blacklistKey);
             if (isBlacklisted)
@@ -59,9 +98,9 @@ namespace Application.Features.AuthenticationUseCase.Commands
 
             // Extract user ID from token
             var userId = _jwtTokenService.GetUserIdFromToken(request.RefreshToken);
-            if (!userId.HasValue)
+            if (!userId.HasValue || userId.Value != refreshTokenEntity.UserId)
             {
-                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Invalid refresh token: user ID not found");
+                return ResultDTO<TokenResultDTO>.Failure("Auth", null, "Invalid refresh token: user ID mismatch");
             }
 
             // Get user from repository
@@ -113,20 +152,46 @@ namespace Application.Features.AuthenticationUseCase.Commands
             // Generate new access token
             var newToken = _jwtTokenService.GenerateToken(user, roles, out DateTime expireDate);
 
+            // Generate new refresh token (token rotation)
+            var newRefreshToken = _jwtTokenService.GenerateRefreshToken(user, out DateTime refreshTokenExpireDate);
+
+            // Revoke old refresh token in database
+            refreshTokenEntity.Revoke(newRefreshToken);
+            await _refreshTokenRepository.UpdateAsync(refreshTokenEntity);
+
+            // Store new refresh token in database
+            var newRefreshTokenEntity = RefreshToken.Create(user.Id, newRefreshToken, refreshTokenExpireDate);
+            await _refreshTokenRepository.AddAsync(newRefreshTokenEntity);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
             // Create token response
             var tokenResponse = new TokenResultDTO
             {
                 Token = newToken,
+                RefreshToken = newRefreshToken,
                 ExpireTime = expireDate
             };
 
-            // Update cache with new token
             var email = user.Email.Value;
-            var timeToExpire = expireDate - DateTime.Now;
-            await _cacheService.SetAsync<TokenResultDTO>($"UserEmail:{email}", tokenResponse, timeToExpire);
 
-            // Optionally blacklist the old refresh token (token rotation)
-            // This is a security best practice - invalidate the old token after use
+            // Update access token in cache (short-lived)
+            var accessTokenCacheKey = $"AccessToken:{email}";
+            await _cacheService.SetAsync<TokenResultDTO>(accessTokenCacheKey, tokenResponse, expireDate - DateTime.Now);
+
+            // Remove old refresh token from cache
+            await _cacheService.RemoveAsync(refreshTokenCacheKey);
+
+            // Store new refresh token in cache (long-lived)
+            var newRefreshTokenCacheKey = $"RefreshToken:{newRefreshToken}";
+            var newRefreshTokenCacheData = new { 
+                UserId = user.Id, 
+                Email = email,
+                CreatedAt = DateTime.UtcNow,
+                ExpiresAt = refreshTokenExpireDate
+            };
+            await _cacheService.SetAsync(newRefreshTokenCacheKey, newRefreshTokenCacheData, refreshTokenExpireDate - DateTime.Now);
+
+            // Blacklist old refresh token in cache (additional security layer)
             await _cacheService.SetAsync(blacklistKey, new { Blacklisted = true, Timestamp = DateTime.UtcNow }, TimeSpan.FromDays(7));
 
             return ResultDTO<TokenResultDTO>.Success("OK", tokenResponse, "Token refreshed successfully");

@@ -9,6 +9,7 @@ namespace Application.Features.AuthenticationUseCase.DTOs
     public class TokenResultDTO
     {
         public string Token { get; set; }
+        public string RefreshToken { get; set; }
         public DateTime ExpireTime { get; set; }
     }
 }

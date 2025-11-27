@@ -40,6 +40,7 @@ namespace API.DependencyInjections
             services.AddScoped<IPermissionRepository, PermissionRepository>();
             services.AddScoped<IUserPermissionRepository, UserPermissionRepository>();
             services.AddScoped<IRolePermissionRepository, RolePermissionRepository>();
+            services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
 
             // Register UnitOfWork
             services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -50,6 +50,31 @@ namespace Infrastructure.Services.Authentication
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        public string GenerateRefreshToken(User user, out DateTime expireDate)
+        {
+            var claims = new List<Claim>
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+                new Claim("token_type", "refresh")
+            };
+
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.Key));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            
+            // Refresh tokens typically last longer (e.g., 7-30 days)
+            expireDate = DateTime.Now.AddDays(_jwtSettings.RefreshTokenExpireDays);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: expireDate,
+                signingCredentials: creds
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(token);
+        }
+
         public ClaimsPrincipal? ValidateToken(string token, bool validateExpiration = true)
         {
             try

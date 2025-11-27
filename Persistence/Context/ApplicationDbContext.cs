@@ -38,6 +38,16 @@ namespace Persistence.Context
             {
                 builder.OwnsOne(u => u.Name);
             });
+
+            modelBuilder.Entity<RefreshToken>(builder =>
+            {
+                builder.HasIndex(rt => rt.Token).IsUnique();
+                builder.HasIndex(rt => rt.UserId);
+                builder.HasOne(rt => rt.User)
+                    .WithMany()
+                    .HasForeignKey(rt => rt.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
         }
 
         public DbSet<User> Users => Set<User>();
@@ -48,6 +58,7 @@ namespace Persistence.Context
         public DbSet<Permission>  Permissions => Set<Permission>();
         public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
         public DbSet<UserPermission> UserPermissions => Set<UserPermission>();
+        public DbSet<RefreshToken> RefreshTokens => Set<RefreshToken>();
 
 
 

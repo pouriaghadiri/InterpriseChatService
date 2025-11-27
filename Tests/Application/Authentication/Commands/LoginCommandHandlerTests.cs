@@ -60,7 +60,9 @@ namespace Tests.Application.Authentication.Commands
             var role = CreateTestRole();
             var roles = new List<string> { "Admin" };
             var token = "test-jwt-token";
+            var refreshToken = "test-refresh-token";
             var expireDate = DateTime.UtcNow.AddHours(1);
+            var refreshTokenExpireDate = DateTime.UtcNow.AddDays(7);
 
             _userRepositoryMock
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
@@ -74,6 +76,11 @@ namespace Tests.Application.Authentication.Commands
             _jwtTokenServiceMock
                 .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<IEnumerable<string>>(), out capturedExpireDate, null))
                 .Returns(token);
+
+            DateTime capturedRefreshTokenExpireDate = refreshTokenExpireDate;
+            _jwtTokenServiceMock
+                .Setup(service => service.GenerateRefreshToken(It.IsAny<User>(), out capturedRefreshTokenExpireDate))
+                .Returns(refreshToken);
 
             _cacheServiceMock
                 .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<TokenResultDTO>(), It.IsAny<TimeSpan>()))
@@ -91,6 +98,7 @@ namespace Tests.Application.Authentication.Commands
             result.IsSuccess.Should().BeTrue();
             result.Data.Should().NotBeNull();
             result.Data.Token.Should().Be(token);
+            result.Data.RefreshToken.Should().Be(refreshToken);
             result.Data.ExpireTime.Should().Be(expireDate);
             result.Message.Should().Be("Logged in");
         }
@@ -159,7 +167,9 @@ namespace Tests.Application.Authentication.Commands
             var role = CreateTestRole();
             var roles = new List<string> { "Admin" };
             var token = "test-jwt-token";
+            var refreshToken = "test-refresh-token";
             var expireDate = DateTime.UtcNow.AddHours(1);
+            var refreshTokenExpireDate = DateTime.UtcNow.AddDays(7);
 
             _userRepositoryMock
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
@@ -173,6 +183,11 @@ namespace Tests.Application.Authentication.Commands
             _jwtTokenServiceMock
                 .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<IEnumerable<string>>(), out capturedExpireDate, null))
                 .Returns(token);
+
+            DateTime capturedRefreshTokenExpireDate = refreshTokenExpireDate;
+            _jwtTokenServiceMock
+                .Setup(service => service.GenerateRefreshToken(It.IsAny<User>(), out capturedRefreshTokenExpireDate))
+                .Returns(refreshToken);
 
             _cacheServiceMock
                 .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<TokenResultDTO>(), It.IsAny<TimeSpan>()))
