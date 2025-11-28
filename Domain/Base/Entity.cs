@@ -11,9 +11,9 @@ namespace Domain.Base
     {
         public Guid Id { get; protected set; } = Guid.NewGuid();
         public DateTime CreatedAt { get; private set; }
-        public int CreatedBy { get; private set; }
+        public Guid CreatorUserID { get; private set; }
         public DateTime UpdatedAt { get; private set; }
-        public int ModifiedBy { get; private set; }
+        public Guid? ModifierUserID { get; private set; }
         public bool IsActive { get; private set; }
         public bool IsDeleted { get; private set; }
         public DateTime DeletedAt { get; private set; }

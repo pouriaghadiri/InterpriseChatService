@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using Xunit;
 using RoleEntity = Domain.Entities.Role;
 using DepartmentEntity = Domain.Entities.Department;
+using Microsoft.AspNetCore.Http;
 
 namespace Tests.Application.Authentication.Commands
 {
@@ -31,6 +32,7 @@ namespace Tests.Application.Authentication.Commands
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly RefreshTokenCommandHandler _handler;
         private readonly RefreshTokenCommand _request;
+        private readonly Mock<IHttpContextAccessor> _httpContextAccessor;
 
         public RefreshTokenCommandHandlerTests()
         {
@@ -41,6 +43,7 @@ namespace Tests.Application.Authentication.Commands
             _userRoleInDepartmentRepositoryMock = new Mock<IUserRoleInDepartmentRepository>();
             _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _httpContextAccessor = new Mock<IHttpContextAccessor>();
 
             _handler = new RefreshTokenCommandHandler(
                 _userRepositoryMock.Object,
@@ -49,7 +52,8 @@ namespace Tests.Application.Authentication.Commands
                 _activeDepartmentServiceMock.Object,
                 _userRoleInDepartmentRepositoryMock.Object,
                 _refreshTokenRepositoryMock.Object,
-                _unitOfWorkMock.Object);
+                _unitOfWorkMock.Object,
+                _httpContextAccessor.Object);
 
             _request = new RefreshTokenCommand
             {

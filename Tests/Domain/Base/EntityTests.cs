@@ -17,8 +17,8 @@ namespace Tests.UnitTest.Domain.Base
             entity.Id.Should().NotBeEmpty();
             entity.CreatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
             entity.UpdatedAt.Should().BeCloseTo(DateTime.Now, TimeSpan.FromSeconds(5));
-            entity.CreatedBy.Should().Be(0);
-            entity.ModifiedBy.Should().Be(0);
+            entity.CreatorUserID.Should().NotBeEmpty();
+            entity.ModifierUserID.Should().NotBeEmpty();
             entity.IsActive.Should().BeTrue();
             entity.IsDeleted.Should().BeFalse();
             entity.DeletedAt.Should().Be(default(DateTime));
