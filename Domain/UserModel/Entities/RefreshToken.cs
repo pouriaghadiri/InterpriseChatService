@@ -15,7 +15,7 @@ namespace Domain.Entities
         public string? DeviceInfo { get; set; }
         public string? IpAddress { get; set; }
         
-        public bool IsExpired => DateTime.UtcNow >= ExpiresAt;
+        public bool IsExpired => DateTime.Now >= ExpiresAt;
         public bool IsRevoked => RevokedAt != null;
         public bool IsActive => !IsRevoked && !IsExpired;
 
@@ -30,7 +30,7 @@ namespace Domain.Entities
                 UserId = userId,
                 Token = token,
                 ExpiresAt = expiresAt,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 DeviceInfo = deviceInfo,
                 IpAddress = ipAddress
             };
@@ -38,7 +38,7 @@ namespace Domain.Entities
 
         public void Revoke(string? replacedByToken = null)
         {
-            RevokedAt = DateTime.UtcNow;
+            RevokedAt = DateTime.Now;
             ReplacedByToken = replacedByToken;
         }
     }

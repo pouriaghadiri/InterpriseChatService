@@ -175,4 +175,38 @@ public class AuthController : ControllerBase
         var result = await _mediator.Send(command);
         return Ok(result);
     }
+
+    /// <summary>
+    /// Block a specific refresh token
+    /// </summary>
+    /// <param name="command">Token blocking data</param>
+    /// <returns>Block result</returns>
+    [HttpPost("block-token")]
+    [Authorize(Policy = "PERM_ManageToken_Block_Admin")]
+    public async Task<ActionResult<MessageDTO>> BlockToken([FromBody] BlockTokenCommand command)
+    {
+        var result = await _mediator.Send(command);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+        return Ok(result);
+    }
+
+    /// <summary>
+    /// Block all tokens for a user (admin only)
+    /// </summary>
+    /// <param name="command">User ID and reason</param>
+    /// <returns>Block result</returns>
+    [HttpPost("block-all-tokens")]
+    [Authorize(Policy = "PERM_ManageToken_Block_Admin")]
+    public async Task<ActionResult<MessageDTO>> BlockAllUserTokens([FromBody] BlockAllUserTokensCommand command)
+    {
+        var result = await _mediator.Send(command);
+        if (!result.IsSuccess)
+        {
+            return BadRequest(result);
+        }
+        return Ok(result);
+    }
 }

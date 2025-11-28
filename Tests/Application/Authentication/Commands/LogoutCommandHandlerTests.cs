@@ -1,10 +1,15 @@
+using Application.Common;
 using Application.Features.AuthenticationUseCase.Commands;
 using Domain.Base;
+using Domain.Base.Interface;
+using Domain.Entities;
+using Domain.Repositories;
 using Domain.Services;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Moq;
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Xunit;
@@ -15,6 +20,9 @@ namespace Tests.Application.Authentication.Commands
     {
         private readonly Mock<ICacheInvalidationService> _cacheInvalidationServiceMock;
         private readonly Mock<IHttpContextAccessor> _httpContextAccessorMock;
+        private readonly Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock;
+        private readonly Mock<ICacheService> _cacheServiceMock;
+        private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly LogoutCommandHandler _handler;
         private readonly LogoutCommand _request;
 
@@ -22,10 +30,16 @@ namespace Tests.Application.Authentication.Commands
         {
             _cacheInvalidationServiceMock = new Mock<ICacheInvalidationService>();
             _httpContextAccessorMock = new Mock<IHttpContextAccessor>();
+            _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
+            _cacheServiceMock = new Mock<ICacheService>();
+            _unitOfWorkMock = new Mock<IUnitOfWork>();
 
             _handler = new LogoutCommandHandler(
                 _cacheInvalidationServiceMock.Object,
-                _httpContextAccessorMock.Object);
+                _httpContextAccessorMock.Object,
+                _refreshTokenRepositoryMock.Object,
+                _cacheServiceMock.Object,
+                _unitOfWorkMock.Object);
 
             _request = new LogoutCommand();
         }
@@ -44,6 +58,26 @@ namespace Tests.Application.Authentication.Commands
             _cacheInvalidationServiceMock
                 .Setup(service => service.InvalidateUserCacheAsync(It.IsAny<Guid>(), It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.GetActiveTokensByUserIdAsync(It.IsAny<Guid>()))
+                .ReturnsAsync(new List<RefreshToken>());
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.UpdateAsync(It.IsAny<RefreshToken>()))
+                .Returns(Task.CompletedTask);
+
+            _cacheServiceMock
+                .Setup(service => service.RemoveAsync(It.IsAny<string>()))
+                .Returns(Task.CompletedTask);
+
+            _cacheServiceMock
+                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
+
+            _unitOfWorkMock
+                .Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);

@@ -129,7 +129,7 @@ namespace Infrastructure.Services.Authentication
             {
                 var tokenHandler = new JwtSecurityTokenHandler();
                 var jwtToken = tokenHandler.ReadJwtToken(token);
-                return jwtToken.ValidTo < DateTime.UtcNow;
+                return jwtToken.ValidTo < DateTime.Now;
             }
             catch
             {

@@ -51,12 +51,12 @@ namespace Application.Features.AuthenticationUseCase.Commands
                     await _refreshTokenRepository.UpdateAsync(token);
                     
                     // Remove from cache
-                    var cacheKey = $"RefreshToken:{token.Token}";
+                    var cacheKey = CacheHelper.RefreshTokenKey(token.Token);
                     await _cacheService.RemoveAsync(cacheKey);
                     
                     // Add to blacklist
-                    var blacklistKey = $"blacklist:{token.Token}";
-                    await _cacheService.SetAsync(blacklistKey, new { Blacklisted = true, Timestamp = DateTime.UtcNow }, TimeSpan.FromDays(7));
+                    var blacklistKey = CacheHelper.TokenBlacklistKey(token.Token);
+                    await _cacheService.SetAsync(blacklistKey, new { Blacklisted = true, Timestamp = DateTime.Now }, CacheHelper.Expiration.TokenBlacklist);
                 }
                 
                 await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -1,6 +1,8 @@
-﻿using Application.Features.AuthenticationUseCase.DTOs;
+﻿using Application.Common;
+using Application.Features.AuthenticationUseCase.DTOs;
 using Application.Features.AuthenticationUseCase.Services;
 using Domain.Base;
+using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
@@ -122,15 +124,15 @@ namespace Application.Features.AuthenticationUseCase.Commands
             };
 
             // Store access token in cache (short-lived, for quick lookup)
-            var accessTokenCacheKey = $"AccessToken:{request.Email}";
+            var accessTokenCacheKey = CacheHelper.AccessTokenKey(request.Email);
             await _cacheService.SetAsync<TokenResultDTO>(accessTokenCacheKey, tokenResponse, expireDate - DateTime.Now);
 
             // Store refresh token in cache (long-lived, for quick validation)
-            var refreshTokenCacheKey = $"RefreshToken:{refreshToken}";
+            var refreshTokenCacheKey = CacheHelper.RefreshTokenKey(refreshToken);
             var refreshTokenCacheData = new { 
                 UserId = user.Id, 
                 Email = request.Email,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ExpiresAt = refreshTokenExpireDate
             };
             await _cacheService.SetAsync(refreshTokenCacheKey, refreshTokenCacheData, refreshTokenExpireDate - DateTime.Now);

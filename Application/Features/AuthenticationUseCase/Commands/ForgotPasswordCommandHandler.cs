@@ -59,14 +59,14 @@ namespace Application.Features.AuthenticationUseCase.Commands
 
             // Generate a secure password reset token
             var resetToken = GenerateSecureToken();
-            var expiresAt = DateTime.UtcNow.Add(CacheHelper.Expiration.PasswordResetToken);
+            var expiresAt = DateTime.Now.Add(CacheHelper.Expiration.PasswordResetToken);
 
             // Store token in cache with expiration
             var tokenCacheModel = new PasswordResetTokenCacheModel
             {
                 UserId = user.Id,
                 Email = emailRes.Data.Value,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ExpiresAt = expiresAt
             };
 

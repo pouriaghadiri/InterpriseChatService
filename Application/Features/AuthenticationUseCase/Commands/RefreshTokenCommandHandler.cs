@@ -1,6 +1,8 @@
+using Application.Common;
 using Application.Features.AuthenticationUseCase.DTOs;
 using Application.Features.AuthenticationUseCase.Services;
 using Domain.Base;
+using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
@@ -182,17 +184,17 @@ namespace Application.Features.AuthenticationUseCase.Commands
             await _cacheService.RemoveAsync(refreshTokenCacheKey);
 
             // Store new refresh token in cache (long-lived)
-            var newRefreshTokenCacheKey = $"RefreshToken:{newRefreshToken}";
+            var newRefreshTokenCacheKey = CacheHelper.RefreshTokenKey(newRefreshToken);
             var newRefreshTokenCacheData = new { 
                 UserId = user.Id, 
                 Email = email,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ExpiresAt = refreshTokenExpireDate
             };
             await _cacheService.SetAsync(newRefreshTokenCacheKey, newRefreshTokenCacheData, refreshTokenExpireDate - DateTime.Now);
 
             // Blacklist old refresh token in cache (additional security layer)
-            await _cacheService.SetAsync(blacklistKey, new { Blacklisted = true, Timestamp = DateTime.UtcNow }, TimeSpan.FromDays(7));
+            await _cacheService.SetAsync(blacklistKey, new { Blacklisted = true, Timestamp = DateTime.Now }, CacheHelper.Expiration.TokenBlacklist);
 
             return ResultDTO<TokenResultDTO>.Success("OK", tokenResponse, "Token refreshed successfully");
         }

@@ -61,7 +61,7 @@ namespace Application.Features.AuthenticationUseCase.Commands
             }
 
             // Check if token is expired
-            if (DateTime.UtcNow > tokenCacheModel.ExpiresAt)
+            if (DateTime.Now > tokenCacheModel.ExpiresAt)
             {
                 // Remove expired token
                 await _cacheService.RemoveAsync(tokenCacheKey);

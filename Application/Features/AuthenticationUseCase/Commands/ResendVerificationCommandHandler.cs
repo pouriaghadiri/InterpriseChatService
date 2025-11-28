@@ -64,14 +64,14 @@ namespace Application.Features.AuthenticationUseCase.Commands
 
             // Generate a secure email verification token
             var verificationToken = GenerateSecureToken();
-            var expiresAt = DateTime.UtcNow.Add(CacheHelper.Expiration.EmailVerificationToken);
+            var expiresAt = DateTime.Now.Add(CacheHelper.Expiration.EmailVerificationToken);
 
             // Store token in cache with expiration
             var tokenCacheModel = new EmailVerificationTokenCacheModel
             {
                 UserId = user.Id,
                 Email = emailRes.Data.Value,
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = DateTime.Now,
                 ExpiresAt = expiresAt
             };
 

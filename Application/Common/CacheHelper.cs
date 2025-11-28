@@ -33,6 +33,10 @@ namespace Application.Common
         public static string EmailVerificationTokenKey(string token) => $"email-verification:{token}";
         public static string EmailVerificationTokenByEmailKey(string email) => $"email-verification:email:{email}";
         
+        // Token-related cache keys
+        public static string AccessTokenKey(string email) => $"AccessToken:{email}";
+        public static string RefreshTokenKey(string token) => $"RefreshToken:{token}";
+        
         // Cache expiration times
         public static class Expiration
         {
@@ -44,6 +48,7 @@ namespace Application.Common
             public static readonly TimeSpan TokenBlacklist = TimeSpan.FromDays(7);
             public static readonly TimeSpan PasswordResetToken = TimeSpan.FromHours(1); // 1 hour expiration
             public static readonly TimeSpan EmailVerificationToken = TimeSpan.FromDays(7); // 7 days expiration
+            public static readonly TimeSpan RefreshToken = TimeSpan.FromDays(7); // 7 days expiration (matches RefreshTokenExpireDays)
         }
     }
 }

@@ -42,7 +42,7 @@ namespace Persistence.Repositories
 
         public async Task<List<RefreshToken>> GetActiveTokensByUserIdAsync(Guid userId)
         {
-            var now = DateTime.UtcNow;
+            var now = DateTime.Now;
             return await _context.RefreshTokens
                 .Where(rt => rt.UserId == userId 
                     && rt.RevokedAt == null 
@@ -88,7 +88,7 @@ namespace Persistence.Repositories
         public async Task RemoveExpiredTokensAsync()
         {
             var expiredTokens = await _context.RefreshTokens
-                .Where(rt => rt.ExpiresAt < DateTime.UtcNow && rt.RevokedAt != null)
+                .Where(rt => rt.ExpiresAt < DateTime.Now && rt.RevokedAt != null)
                 .ToListAsync();
 
             _context.RefreshTokens.RemoveRange(expiredTokens);

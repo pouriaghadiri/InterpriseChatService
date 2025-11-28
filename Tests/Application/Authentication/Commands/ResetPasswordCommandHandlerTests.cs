@@ -50,8 +50,8 @@ namespace Tests.Application.Authentication.Commands
             {
                 UserId = user.Id,
                 Email = user.Email.Value,
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddHours(1)
             };
 
             _cacheServiceMock
@@ -152,8 +152,8 @@ namespace Tests.Application.Authentication.Commands
             {
                 UserId = Guid.NewGuid(),
                 Email = "john@example.com",
-                CreatedAt = DateTime.UtcNow,
-                ExpiresAt = DateTime.UtcNow.AddHours(1)
+                CreatedAt = DateTime.Now,
+                ExpiresAt = DateTime.Now.AddHours(1)
             };
 
             _cacheServiceMock

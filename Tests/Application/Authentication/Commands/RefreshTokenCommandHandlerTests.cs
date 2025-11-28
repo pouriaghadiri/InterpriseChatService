@@ -2,6 +2,7 @@ using Application.Features.AuthenticationUseCase.Commands;
 using Application.Features.AuthenticationUseCase.DTOs;
 using Application.Features.AuthenticationUseCase.Services;
 using Domain.Base;
+using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
@@ -26,6 +27,8 @@ namespace Tests.Application.Authentication.Commands
         private readonly Mock<ICacheService> _cacheServiceMock;
         private readonly Mock<IActiveDepartmentService> _activeDepartmentServiceMock;
         private readonly Mock<IUserRoleInDepartmentRepository> _userRoleInDepartmentRepositoryMock;
+        private readonly Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock;
+        private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly RefreshTokenCommandHandler _handler;
         private readonly RefreshTokenCommand _request;
 
@@ -36,13 +39,17 @@ namespace Tests.Application.Authentication.Commands
             _cacheServiceMock = new Mock<ICacheService>();
             _activeDepartmentServiceMock = new Mock<IActiveDepartmentService>();
             _userRoleInDepartmentRepositoryMock = new Mock<IUserRoleInDepartmentRepository>();
+            _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
+            _unitOfWorkMock = new Mock<IUnitOfWork>();
 
             _handler = new RefreshTokenCommandHandler(
                 _userRepositoryMock.Object,
                 _jwtTokenServiceMock.Object,
                 _cacheServiceMock.Object,
                 _activeDepartmentServiceMock.Object,
-                _userRoleInDepartmentRepositoryMock.Object);
+                _userRoleInDepartmentRepositoryMock.Object,
+                _refreshTokenRepositoryMock.Object,
+                _unitOfWorkMock.Object);
 
             _request = new RefreshTokenCommand
             {
@@ -70,6 +77,10 @@ namespace Tests.Application.Authentication.Commands
         public async Task Handle_Should_Return_Failure_WhenTokenIsInvalid()
         {
             // Arrange
+            _cacheServiceMock
+                .Setup(service => service.GetAsync<object>(It.IsAny<string>()))
+                .ReturnsAsync((object?)null);
+
             _jwtTokenServiceMock
                 .Setup(service => service.ValidateToken(It.IsAny<string>(), It.IsAny<bool>()))
                 .Returns((ClaimsPrincipal)null);
@@ -93,6 +104,14 @@ namespace Tests.Application.Authentication.Commands
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString())
             }));
+
+            _cacheServiceMock
+                .Setup(service => service.GetAsync<object>(It.IsAny<string>()))
+                .ReturnsAsync((object?)null);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.GetByTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync((RefreshToken?)null);
 
             _jwtTokenServiceMock
                 .Setup(service => service.ValidateToken(It.IsAny<string>(), It.IsAny<bool>()))
@@ -125,6 +144,16 @@ namespace Tests.Application.Authentication.Commands
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString())
             }));
+
+            var refreshTokenEntity = RefreshToken.Create(userId, "test-token", DateTime.Now.AddDays(7));
+
+            _cacheServiceMock
+                .Setup(service => service.GetAsync<object>(It.IsAny<string>()))
+                .ReturnsAsync((object?)null);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.GetByTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync(refreshTokenEntity);
 
             _jwtTokenServiceMock
                 .Setup(service => service.ValidateToken(It.IsAny<string>(), It.IsAny<bool>()))
@@ -162,12 +191,24 @@ namespace Tests.Application.Authentication.Commands
             var role = CreateTestRole();
             var roles = new List<string> { "Admin" };
             var newToken = "new-access-token";
-            var expireDate = DateTime.UtcNow.AddHours(1);
+            var newRefreshToken = "new-refresh-token";
+            var expireDate = DateTime.Now.AddHours(1);
+            var refreshTokenExpireDate = DateTime.Now.AddDays(7);
+
+            var refreshTokenEntity = RefreshToken.Create(userId, "valid-refresh-token", DateTime.Now.AddDays(7));
 
             var principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, userId.ToString())
             }));
+
+            _cacheServiceMock
+                .Setup(service => service.GetAsync<object>(It.IsAny<string>()))
+                .ReturnsAsync((object?)null);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.GetByTokenAsync(It.IsAny<string>()))
+                .ReturnsAsync(refreshTokenEntity);
 
             _jwtTokenServiceMock
                 .Setup(service => service.ValidateToken(It.IsAny<string>(), It.IsAny<bool>()))
@@ -202,8 +243,33 @@ namespace Tests.Application.Authentication.Commands
                 .Setup(service => service.GenerateToken(It.IsAny<User>(), It.IsAny<IEnumerable<string>>(), out capturedExpireDate, null))
                 .Returns(newToken);
 
+            DateTime capturedRefreshTokenExpireDate = refreshTokenExpireDate;
+            _jwtTokenServiceMock
+                .Setup(service => service.GenerateRefreshToken(It.IsAny<User>(), out capturedRefreshTokenExpireDate))
+                .Returns(newRefreshToken);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.UpdateAsync(It.IsAny<RefreshToken>()))
+                .Returns(Task.CompletedTask);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.AddAsync(It.IsAny<RefreshToken>()))
+                .Returns(Task.CompletedTask);
+
+            _unitOfWorkMock
+                .Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
             _cacheServiceMock
-                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan?>()))
+                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<TokenResultDTO>(), It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
+
+            _cacheServiceMock
+                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
+
+            _cacheServiceMock
+                .Setup(service => service.RemoveAsync(It.IsAny<string>()))
                 .Returns(Task.CompletedTask);
 
             // Act

@@ -2,6 +2,7 @@ using Application.Features.AuthenticationUseCase.Commands;
 using Application.Features.AuthenticationUseCase.DTOs;
 using Application.Features.AuthenticationUseCase.Services;
 using Domain.Base;
+using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
@@ -26,6 +27,8 @@ namespace Tests.Application.Authentication.Commands
         private readonly Mock<ICacheService> _cacheServiceMock;
         private readonly Mock<IActiveDepartmentService> _activeDepartmentServiceMock;
         private readonly Mock<IUserRoleInDepartmentRepository> _userRoleInDepartmentRepositoryMock;
+        private readonly Mock<IRefreshTokenRepository> _refreshTokenRepositoryMock;
+        private readonly Mock<IUnitOfWork> _unitOfWorkMock;
         private readonly LoginCommandHandler _handler;
         private readonly LoginCommand _request;
 
@@ -36,13 +39,17 @@ namespace Tests.Application.Authentication.Commands
             _cacheServiceMock = new Mock<ICacheService>();
             _activeDepartmentServiceMock = new Mock<IActiveDepartmentService>();
             _userRoleInDepartmentRepositoryMock = new Mock<IUserRoleInDepartmentRepository>();
+            _refreshTokenRepositoryMock = new Mock<IRefreshTokenRepository>();
+            _unitOfWorkMock = new Mock<IUnitOfWork>();
 
             _handler = new LoginCommandHandler(
                 _userRepositoryMock.Object,
                 _jwtTokenServiceMock.Object,
                 _cacheServiceMock.Object,
                 _activeDepartmentServiceMock.Object,
-                _userRoleInDepartmentRepositoryMock.Object);
+                _userRoleInDepartmentRepositoryMock.Object,
+                _refreshTokenRepositoryMock.Object,
+                _unitOfWorkMock.Object);
 
             _request = new LoginCommand
             {
@@ -61,8 +68,8 @@ namespace Tests.Application.Authentication.Commands
             var roles = new List<string> { "Admin" };
             var token = "test-jwt-token";
             var refreshToken = "test-refresh-token";
-            var expireDate = DateTime.UtcNow.AddHours(1);
-            var refreshTokenExpireDate = DateTime.UtcNow.AddDays(7);
+            var expireDate = DateTime.Now.AddHours(1);
+            var refreshTokenExpireDate = DateTime.Now.AddDays(7);
 
             _userRepositoryMock
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
@@ -168,8 +175,8 @@ namespace Tests.Application.Authentication.Commands
             var roles = new List<string> { "Admin" };
             var token = "test-jwt-token";
             var refreshToken = "test-refresh-token";
-            var expireDate = DateTime.UtcNow.AddHours(1);
-            var refreshTokenExpireDate = DateTime.UtcNow.AddDays(7);
+            var expireDate = DateTime.Now.AddHours(1);
+            var refreshTokenExpireDate = DateTime.Now.AddDays(7);
 
             _userRepositoryMock
                 .Setup(repo => repo.GetbyEmailAsync(It.IsAny<Email>()))
@@ -193,9 +200,21 @@ namespace Tests.Application.Authentication.Commands
                 .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<TokenResultDTO>(), It.IsAny<TimeSpan>()))
                 .Returns(Task.CompletedTask);
 
+            _cacheServiceMock
+                .Setup(service => service.SetAsync(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan>()))
+                .Returns(Task.CompletedTask);
+
             _activeDepartmentServiceMock
                 .Setup(service => service.SetActiveDepartmentIdAsync(It.IsAny<Guid>(), It.IsAny<Guid>()))
                 .ReturnsAsync(true);
+
+            _refreshTokenRepositoryMock
+                .Setup(repo => repo.AddAsync(It.IsAny<RefreshToken>()))
+                .Returns(Task.CompletedTask);
+
+            _unitOfWorkMock
+                .Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);

@@ -93,7 +93,7 @@ namespace Application.Features.AuthenticationUseCase.Commands
             {
                 // Add token to blacklist with expiration time
                 var blacklistKey = CacheHelper.TokenBlacklistKey(token);
-                var blacklistValue = new { Blacklisted = true, Timestamp = DateTime.UtcNow };
+                var blacklistValue = new { Blacklisted = true, Timestamp = DateTime.Now };
                 await _cacheService.SetAsync(blacklistKey, blacklistValue, CacheHelper.Expiration.TokenBlacklist);
             }
             catch
