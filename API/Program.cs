@@ -16,6 +16,7 @@ using System.Text;
 using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.RateLimiting;
 using System.Threading.RateLimiting;
+using Microsoft.Extensions.DependencyInjection;
 
 
 internal class Program
@@ -130,6 +131,39 @@ internal class Program
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Key)),
                 ValidateLifetime = true,
                 ClockSkew = TimeSpan.FromSeconds(30)
+            };
+            
+            // Add event handler to check token blacklist
+            options.Events = new JwtBearerEvents
+            {
+                OnTokenValidated = async context =>
+                {
+                    var cacheService = context.HttpContext.RequestServices.GetRequiredService<Domain.Services.ICacheService>();
+                    
+                    // Extract token from Authorization header
+                    string? tokenString = null;
+                    if (context.Request.Headers.ContainsKey("Authorization"))
+                    {
+                        var authHeader = context.Request.Headers["Authorization"].ToString();
+                        if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                        {
+                            tokenString = authHeader.Substring("Bearer ".Length).Trim();
+                        }
+                    }
+                    
+                    if (!string.IsNullOrEmpty(tokenString))
+                    {
+                        // Check if access token is blacklisted
+                        var blacklistKey = CacheHelper.TokenBlacklistKey(tokenString);
+                        var isBlacklisted = await cacheService.ExistsAsync(blacklistKey);
+                        
+                        if (isBlacklisted)
+                        {
+                            context.Fail("Token has been revoked");
+                            return;
+                        }
+                    }
+                }
             };
         });
         builder.Services.AddAuthorization();  

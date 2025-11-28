@@ -8,6 +8,7 @@ using Domain.Entities;
 using Domain.Repositories;
 using Domain.Services;
 using MediatR;
+using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,11 +26,13 @@ namespace Application.Features.AuthenticationUseCase.Commands
         private readonly IUserRoleInDepartmentRepository _userRoleInDepartmentRepository;
         private readonly IRefreshTokenRepository _refreshTokenRepository;
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
         public LoginCommandHandler(IUserRepository userRepository, IJwtTokenService jwtTokenService,
                                    ICacheService cacheService, IActiveDepartmentService activeDepartmentService,
                                    IUserRoleInDepartmentRepository userRoleInDepartmentRepository,
-                                   IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork)
+                                   IRefreshTokenRepository refreshTokenRepository, IUnitOfWork unitOfWork,
+                                   IHttpContextAccessor httpContextAccessor)
         {
             _userRepository = userRepository;
             _jwtTokenService = jwtTokenService;
@@ -38,6 +41,7 @@ namespace Application.Features.AuthenticationUseCase.Commands
             _userRoleInDepartmentRepository = userRoleInDepartmentRepository;
             _refreshTokenRepository = refreshTokenRepository;
             _unitOfWork = unitOfWork;
+            _httpContextAccessor = httpContextAccessor;
         }
         public async Task<ResultDTO<TokenResultDTO>> Handle(LoginCommand request, CancellationToken cancellationToken)
         {
@@ -111,8 +115,12 @@ namespace Application.Features.AuthenticationUseCase.Commands
             // Generate refresh token
             var refreshToken = _jwtTokenService.GenerateRefreshToken(user, out DateTime refreshTokenExpireDate);
 
+            // Get device info and IP address from HttpContext
+            var deviceInfo = _httpContextAccessor.HttpContext?.GetDeviceInfo();
+            var ipAddress = _httpContextAccessor.HttpContext?.GetClientIpAddress();
+
             // Store refresh token in database (hybrid approach)
-            var refreshTokenEntity = RefreshToken.Create(user.Id, refreshToken, refreshTokenExpireDate);
+            var refreshTokenEntity = RefreshToken.Create(user.Id, refreshToken, refreshTokenExpireDate, deviceInfo, ipAddress);
             await _refreshTokenRepository.AddAsync(refreshTokenEntity);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 

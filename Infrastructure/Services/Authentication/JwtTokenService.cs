@@ -111,7 +111,22 @@ namespace Infrastructure.Services.Authentication
                 if (principal == null)
                     return null;
 
+                // Try multiple claim types because JWT library may map claims differently after validation
+                // 1. Try JwtRegisteredClaimNames.Sub (original claim name)
                 var userIdClaim = principal.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                
+                // 2. Try ClaimTypes.NameIdentifier (mapped claim name)
+                if (string.IsNullOrEmpty(userIdClaim))
+                {
+                    userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                }
+                
+                // 3. Try string "sub" (fallback)
+                if (string.IsNullOrEmpty(userIdClaim))
+                {
+                    userIdClaim = principal.FindFirst("sub")?.Value;
+                }
+
                 if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out Guid userId))
                     return null;
 

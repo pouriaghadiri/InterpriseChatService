@@ -177,7 +177,7 @@ public class AuthController : ControllerBase
     }
 
     /// <summary>
-    /// Block a specific refresh token
+    /// Block a specific token (works for both access and refresh tokens)
     /// </summary>
     /// <param name="command">Token blocking data</param>
     /// <returns>Block result</returns>

@@ -32,51 +32,58 @@ namespace Application.Features.AuthenticationUseCase.Commands
         public async Task<MessageDTO> Handle(BlockTokenCommand request, CancellationToken cancellationToken)
         {
             // Validate token input
-            if (string.IsNullOrWhiteSpace(request.RefreshToken))
+            if (string.IsNullOrWhiteSpace(request.Token))
             {
-                return MessageDTO.Failure("Invalid", null, "Refresh token is required");
+                return MessageDTO.Failure("Invalid", null, "Token is required");
             }
 
-            // Validate token structure
-            var principal = _jwtTokenService.ValidateToken(request.RefreshToken, validateExpiration: false);
+            // Validate token structure (works for both access and refresh tokens)
+            var principal = _jwtTokenService.ValidateToken(request.Token, validateExpiration: false);
             if (principal == null)
             {
                 return MessageDTO.Failure("Invalid", null, "Invalid token format");
             }
 
-            // Get token from database
-            var refreshTokenEntity = await _refreshTokenRepository.GetByTokenAsync(request.RefreshToken);
-            if (refreshTokenEntity == null)
-            {
-                return MessageDTO.Failure("NotFound", null, "Token not found");
-            }
-
-            // Check if already revoked
-            if (refreshTokenEntity.IsRevoked)
+            // Check if already blacklisted
+            var blacklistKey = CacheHelper.TokenBlacklistKey(request.Token);
+            var isAlreadyBlacklisted = await _cacheService.ExistsAsync(blacklistKey);
+            if (isAlreadyBlacklisted)
             {
                 return MessageDTO.Failure("AlreadyBlocked", null, "Token is already blocked");
             }
 
-            // Revoke token in database
-            refreshTokenEntity.Revoke();
-            if (!string.IsNullOrWhiteSpace(request.Reason))
+            // Try to get refresh token from database (if it's a refresh token)
+            var refreshTokenEntity = await _refreshTokenRepository.GetByTokenAsync(request.Token);
+            
+            if (refreshTokenEntity != null)
             {
-                refreshTokenEntity.RevokedBy = request.Reason;
+                // It's a refresh token - revoke in database
+                if (refreshTokenEntity.IsRevoked)
+                {
+                    return MessageDTO.Failure("AlreadyBlocked", null, "Token is already blocked");
+                }
+
+                refreshTokenEntity.Revoke();
+                if (!string.IsNullOrWhiteSpace(request.Reason))
+                {
+                    refreshTokenEntity.RevokedBy = request.Reason;
+                }
+                await _refreshTokenRepository.UpdateAsync(refreshTokenEntity);
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+                // Remove refresh token from cache
+                var refreshTokenCacheKey = CacheHelper.RefreshTokenKey(request.Token);
+                await _cacheService.RemoveAsync(refreshTokenCacheKey);
             }
-            await _refreshTokenRepository.UpdateAsync(refreshTokenEntity);
-            await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // If it's an access token (not in refresh token DB), we'll just blacklist it in cache
 
-            // Remove from cache
-            var refreshTokenCacheKey = CacheHelper.RefreshTokenKey(request.RefreshToken);
-            await _cacheService.RemoveAsync(refreshTokenCacheKey);
-
-            // Add to blacklist in cache
-            var blacklistKey = CacheHelper.TokenBlacklistKey(request.RefreshToken);
+            // Add to blacklist in cache (works for both access and refresh tokens)
             var blacklistData = new 
             { 
                 Blacklisted = true, 
                 Timestamp = DateTime.Now,
-                Reason = request.Reason
+                Reason = request.Reason,
+                TokenType = refreshTokenEntity != null ? "refresh" : "access"
             };
             await _cacheService.SetAsync(blacklistKey, blacklistData, CacheHelper.Expiration.TokenBlacklist);
 

@@ -6,9 +6,9 @@ namespace Application.Features.AuthenticationUseCase.Validators
     {
         public BlockTokenCommandValidator()
         {
-            RuleFor(x => x.RefreshToken)
-                .NotNull().WithMessage("Refresh token is required.")
-                .NotEmpty().WithMessage("Refresh token cannot be empty.");
+            RuleFor(x => x.Token)
+                .NotNull().WithMessage("Token is required.")
+                .NotEmpty().WithMessage("Token cannot be empty.");
 
             RuleFor(x => x.Reason)
                 .MaximumLength(500).WithMessage("Reason cannot exceed 500 characters.")
