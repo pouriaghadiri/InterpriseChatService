@@ -12,6 +12,7 @@ using Infrastructure.Services;
 using Infrastructure.Services.Authentication;
 using Infrastructure.Services.Email;
 using Application.Common.DTOs;
+using Application.Common.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Persistence.Context;
@@ -53,6 +54,7 @@ namespace API.DependencyInjections
             services.AddScoped<IActiveDepartmentService, ActiveDepartmentService>();
             services.AddScoped<ICacheInvalidationService, CacheInvalidationService>();
             services.AddScoped<IEmailService, SmtpEmailService>();
+            services.AddScoped<IAdminPermissionAssignmentService, AdminPermissionAssignmentService>();
 
             // Configure Email Settings
             services.Configure<EmailSettingsDTO>(configuration.GetSection("EmailSettings"));

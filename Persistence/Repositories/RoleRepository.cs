@@ -54,5 +54,10 @@ namespace Persistence.Repositories
         {
             return await _context.UserRoles.AnyAsync(ur => ur.RoleId == roleId, cancellationToken);
         }
+
+        public async Task<Role?> GetByNameAsync(string name, CancellationToken cancellationToken = default)
+        {
+            return await _context.Roles.FirstOrDefaultAsync(x => x.Name.Value == name, cancellationToken);
+        }
     }
 }

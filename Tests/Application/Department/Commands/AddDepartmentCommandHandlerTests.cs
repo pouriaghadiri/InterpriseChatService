@@ -1,3 +1,4 @@
+using Application.Common.Services;
 using Application.Features.DepartmentUseCase.Commands;
 using Domain.Base;
 using Domain.Base.Interface;
@@ -18,6 +19,7 @@ namespace Tests.Application.Department.Commands
     {
         private readonly Mock<IDepartmentRepository> _departmentRepositoryMock;
         private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<IAdminPermissionAssignmentService> _adminPermissionAssignmentServiceMock;
         private readonly AddDepartmentCommandHandler _handler;
         private readonly AddDepartmentCommand _request;
 
@@ -25,7 +27,11 @@ namespace Tests.Application.Department.Commands
         {
             _departmentRepositoryMock = new Mock<IDepartmentRepository>();
             _unitOfWorkMock = new Mock<IUnitOfWork>();
-            _handler = new AddDepartmentCommandHandler(_departmentRepositoryMock.Object, _unitOfWorkMock.Object);
+            _adminPermissionAssignmentServiceMock = new Mock<IAdminPermissionAssignmentService>();
+            _handler = new AddDepartmentCommandHandler(
+                _departmentRepositoryMock.Object, 
+                _unitOfWorkMock.Object,
+                _adminPermissionAssignmentServiceMock.Object);
 
             _request = new AddDepartmentCommand
             {
@@ -48,6 +54,12 @@ namespace Tests.Application.Department.Commands
             _unitOfWorkMock
                 .Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
                 .ReturnsAsync(1);
+
+            _adminPermissionAssignmentServiceMock
+                .Setup(service => service.AssignAllPermissionsToAdminForDepartmentAsync(
+                    It.IsAny<Guid>(), 
+                    It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
 
             // Act
             var result = await _handler.Handle(_request, CancellationToken.None);

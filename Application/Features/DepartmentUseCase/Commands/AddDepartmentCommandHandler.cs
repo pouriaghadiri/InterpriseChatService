@@ -1,4 +1,5 @@
-﻿using Domain.Base;
+﻿using Application.Common.Services;
+using Domain.Base;
 using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
@@ -16,10 +17,16 @@ namespace Application.Features.DepartmentUseCase.Commands
     {
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IUnitOfWork _unitOfWork;
-        public AddDepartmentCommandHandler(IDepartmentRepository departmentRepository, IUnitOfWork unitOfWork)
+        private readonly IAdminPermissionAssignmentService _adminPermissionAssignmentService;
+        
+        public AddDepartmentCommandHandler(
+            IDepartmentRepository departmentRepository, 
+            IUnitOfWork unitOfWork,
+            IAdminPermissionAssignmentService adminPermissionAssignmentService)
         {
             _departmentRepository = departmentRepository;
             _unitOfWork = unitOfWork;
+            _adminPermissionAssignmentService = adminPermissionAssignmentService;
         }
         public async Task<MessageDTO> Handle(AddDepartmentCommand request, CancellationToken cancellationToken)
         {
@@ -44,6 +51,10 @@ namespace Application.Features.DepartmentUseCase.Commands
             await _departmentRepository.AddAsync(newDepartment.Data);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+            // Automatically assign all permissions to admin role for this new department
+            await _adminPermissionAssignmentService.AssignAllPermissionsToAdminForDepartmentAsync(
+                newDepartment.Data.Id, 
+                cancellationToken);
 
             return MessageDTO.Success("Created", "Department added successfully.");
         }

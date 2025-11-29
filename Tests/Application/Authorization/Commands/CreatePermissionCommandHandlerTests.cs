@@ -1,5 +1,7 @@
+using Application.Common.Services;
 using Application.Features.AuthorizationUseCase.Commands;
 using Domain.Base;
+using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Entities;
 using Domain.Repositories;
@@ -15,13 +17,20 @@ namespace Tests.Application.Authorization.Commands
     public class CreatePermissionCommandHandlerTests
     {
         private readonly Mock<IPermissionRepository> _permissionRepositoryMock;
+        private readonly Mock<IUnitOfWork> _unitOfWorkMock;
+        private readonly Mock<IAdminPermissionAssignmentService> _adminPermissionAssignmentServiceMock;
         private readonly CreatePermissionCommandHandler _handler;
         private readonly CreatePermissionCommand _request;
 
         public CreatePermissionCommandHandlerTests()
         {
             _permissionRepositoryMock = new Mock<IPermissionRepository>();
-            _handler = new CreatePermissionCommandHandler(_permissionRepositoryMock.Object);
+            _unitOfWorkMock = new Mock<IUnitOfWork>();
+            _adminPermissionAssignmentServiceMock = new Mock<IAdminPermissionAssignmentService>();
+            _handler = new CreatePermissionCommandHandler(
+                _permissionRepositoryMock.Object,
+                _unitOfWorkMock.Object,
+                _adminPermissionAssignmentServiceMock.Object);
 
             _request = new CreatePermissionCommand
             {
@@ -40,6 +49,16 @@ namespace Tests.Application.Authorization.Commands
 
             _permissionRepositoryMock
                 .Setup(repo => repo.AddAsync(It.IsAny<Permission>()))
+                .Returns(Task.CompletedTask);
+
+            _unitOfWorkMock
+                .Setup(uow => uow.SaveChangesAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(1);
+
+            _adminPermissionAssignmentServiceMock
+                .Setup(service => service.AssignPermissionToAdminForAllDepartmentsAsync(
+                    It.IsAny<Guid>(), 
+                    It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
 
             // Act

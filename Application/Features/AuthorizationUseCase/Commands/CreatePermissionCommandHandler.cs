@@ -1,4 +1,6 @@
-﻿using Domain.Base;
+﻿using Application.Common.Services;
+using Domain.Base;
+using Domain.Base.Interface;
 using Domain.Common.ValueObjects;
 using Domain.Repositories;
 using MediatR;
@@ -14,9 +16,17 @@ namespace Application.Features.AuthorizationUseCase.Commands
     public class CreatePermissionCommandHandler : IRequestHandler<CreatePermissionCommand, MessageDTO>
     {
         private readonly IPermissionRepository _permissionRepository;
-        public CreatePermissionCommandHandler(IPermissionRepository permissionRepository)
+        private readonly IUnitOfWork _unitOfWork;
+        private readonly IAdminPermissionAssignmentService _adminPermissionAssignmentService;
+        
+        public CreatePermissionCommandHandler(
+            IPermissionRepository permissionRepository,
+            IUnitOfWork unitOfWork,
+            IAdminPermissionAssignmentService adminPermissionAssignmentService)
         {
             _permissionRepository = permissionRepository;
+            _unitOfWork = unitOfWork;
+            _adminPermissionAssignmentService = adminPermissionAssignmentService;
         }
 
         public async Task<MessageDTO> Handle(CreatePermissionCommand request, CancellationToken cancellationToken)
@@ -37,6 +47,13 @@ namespace Application.Features.AuthorizationUseCase.Commands
                 Description = request.Description
             };
             await _permissionRepository.AddAsync(permission);
+            await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+            // Automatically assign this permission to admin role for all departments
+            await _adminPermissionAssignmentService.AssignPermissionToAdminForAllDepartmentsAsync(
+                permission.Id, 
+                cancellationToken);
+
             return MessageDTO.Success("Created", "Permission created successfully.");
         }
     }
